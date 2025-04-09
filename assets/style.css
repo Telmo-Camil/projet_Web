@@ -1,0 +1,265 @@
+:root {
+    --primary-color: #2e86de;
+    --bg-color: #f4f6f8;
+    --text-color: #333;
+    --card-bg: #ffffff;
+    --border-radius: 12px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+  }
+  
+  .container {
+    width: 90%;
+    max-width: 1000px;
+    margin: auto;
+  }
+  
+  /* HEADER */
+  header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 60px 20px;
+    text-align: center;
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+    position: sticky;
+    top: 0;
+  }
+  
+  .title {
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+  
+  header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .login-button-container {
+    display: flex;
+    justify-content: right;
+    margin-right: 15px;
+  }
+  
+  .login-button {
+    background-color: white;
+    color: var(--primary-color);
+    padding: 10px 18px;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: var(--shadow);
+    transition: background-color 0.3s, color 0.3s;
+    margin-top: -60px;
+    margin-bottom: 20px;
+  }
+  
+  .login-button:hover {
+    background-color: #d0e6fc;
+    color: #1b5fbf;
+  }
+  
+  /* SEARCH */
+  .search-section {
+    margin: 40px auto;
+    text-align: center;
+  }
+  
+  .search-section label {
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 12px;
+  }
+  
+  .search-section input {
+    width: 80%;
+    max-width: 500px;
+    padding: 12px 18px;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    font-size: 1rem;
+  }
+  
+  /* NAVIGATION */
+  .nav-section {
+    margin: 40px auto;
+  }
+  
+  .nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+  }
+  
+  .nav-grid a {
+    display: block;
+    text-align: center;
+    background-color: var(--card-bg);
+    color: var(--primary-color);
+    text-decoration: none;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    font-weight: bold;
+    transition: transform 0.2s ease, background-color 0.3s ease;
+  }
+  
+  .nav-grid a:hover {
+    transform: translateY(-5px);
+    background-color: #d0e6fc;
+  }
+  
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.9rem;
+    color: #777;
+    margin-top: 60px;
+  }
+  
+  /* Formulaire d'ajout/édition fournisseur */
+  .form-section {
+    margin: 40px auto;
+    padding: 30px;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    max-width: 600px;
+    width: 100%;
+  }
+  
+  .form-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .form-section label {
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  
+  .form-section input,
+  .form-section select {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    box-shadow: var(--shadow);
+  }
+  
+  .form-section button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+  }
+  
+  .form-section button:hover {
+    background-color: #1b5fbf;
+  }
+  
+  .form-section .cancel-button {
+    background-color: #ccc;
+    color: white;
+    margin-top: 10px;
+  }
+  
+  .form-section .cancel-button:hover {
+    background-color: #999;
+  }
+  
+  /* Tableau des fournisseurs */
+  .product-section {
+    margin: 40px auto;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: var(--card-bg);
+    box-shadow: var(--shadow);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+  }
+  
+  table th, table td {
+    text-align: left;
+    padding: 14px 18px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  table th {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  table tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  /* Section de gestion des produits par catégories */
+  .category-section {
+    margin-top: 40px;
+  }
+  
+  .category-select {
+    padding: 12px;
+    font-size: 1rem;
+    width: 80%;
+    max-width: 500px;
+    margin: 20px auto;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+  }
+  
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  
+  .category-item {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .category-item a {
+    color: var(--primary-color);
+    font-weight: bold;
+    text-decoration: none;
+  }
+  
+  .category-item a:hover {
+    color: #1b5fbf;
+  }
+  

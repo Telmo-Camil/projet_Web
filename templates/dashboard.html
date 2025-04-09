@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestion de Stock</title>
+  <link rel="stylesheet" href="../assets/style.css?v=2.0">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Tableau de bord</h1>
+    </div>
+    <div class="login-button-container">
+        <a href="index.html" class="login-button">Revenir à l'accueil</a>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Statistiques synthétiques -->
+    <section class="dashboard-stats">
+      <div class="stat-card">
+        <h2>320</h2>
+        <p>Produits en stock</p>
+      </div>
+      <div class="stat-card">
+        <h2>8</h2>
+        <p>Produits en rupture</p>
+      </div>
+      <div class="stat-card">
+        <h2>124</h2>
+        <p>Ventes ce mois-ci</p>
+      </div>
+      <div class="stat-card">
+        <h2>7</h2>
+        <p>Commandes en attente</p>
+      </div>
+    </section>
+
+    <!-- Alertes de rupture -->
+    <section class="alerts-section">
+      <h2>⚠️ Alertes - Produits en rupture</h2>
+      <div class="alert-list">
+        <div class="alert-item">
+          <span>Produit A</span> est en rupture de stock.
+        </div>
+        <div class="alert-item">
+          <span>Produit B</span> est en dessous du seuil critique.
+        </div>
+        <div class="alert-item">
+          <span>Produit C</span> n’a pas été approvisionné depuis 30 jours.
+        </div>
+      </div>
+    </section>
+
+    <!-- Graphique de ventes -->
+    <section class="charts-placeholder">
+      <h2>📊 Statistiques des ventes</h2>
+      <canvas id="salesChart" width="800" height="400"></canvas>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 - CPI A2 INFO | Projet de gestion de stock</p>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../static/script/dashboard.js"></script>
+</body>
+</html>

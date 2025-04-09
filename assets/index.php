@@ -24,7 +24,7 @@ $controller = new TaskController($twig);
 switch ($uri) {
     case '/':
         // TODO : call the welcomePage method of the controller
-        echo 'Welcome page';
+        $controller->welcomePage();
         break;
     case 'add_task':
         // TODO : call the addTask method of the controller

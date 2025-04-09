@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestion de Stock</title>
+  <link rel="stylesheet" href="../assets/style.css?v=2.0">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Gestion des produits</h1>
+      <p>Gérez vos produits ici</p>
+    </div>
+    <div class="login-button-container">
+        <a href="index.html" class="login-button">Revenir à l'accueil</a>
+    </div>
+  </header>
+
+  <section class="search-section">
+    <label for="search">Rechercher un produit :</label>
+    <input type="text" id="search" name="search" placeholder="Recherche par nom ou catégorie...">
+    <button id="searchBtn" class="searchBtn">
+        🔍 Rechercher
+    </button>
+    <select id="filterBtn" class="filterBtn">
+        <option value="all">Toutes</option>
+        <option value="tech">Tech</option>
+        <option value="mode">Mode</option>
+        <option value="livres">Livres</option>
+    </select>
+  </section>
+
+  <section class="product-section">
+    <div class="container">
+      <table>
+        <thead>
+          <tr>
+            <th>Nom du produit</th>
+            <th>Catégorie</th>
+            <th>Prix</th>
+            <th>Quantité</th>
+            <th>Fournisseur</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Produit 1</td>
+            <td>Catégorie 1</td>
+            <td>10 €</td>
+            <td>50</td>
+            <td>fournisseur 1</td>
+            <td><a href="modifier-produit.html">Modifier</a> | <a href="#">Supprimer</a></td>
+          </tr>
+          <tr>
+            <td>Produit 2</td>
+            <td>Catégorie 2</td>
+            <td>15 €</td>
+            <td>30</td>
+            <td>fournisseur 2</td>
+            <td><a href="modifier-produit.html">Modifier</a> | <a href="#">Supprimer</a></td>
+          </tr>
+          <!-- Autres produits ici -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+    <div class="ajouter">
+        <a href="ajouter-produit.html" class="login-button">Ajouter</a>
+    </div>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 - CPI A2 INFO | Projet de gestion de stock</p>
+    </div>
+  </footer>
+</body>
+</html>

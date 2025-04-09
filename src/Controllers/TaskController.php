@@ -12,7 +12,7 @@ class TaskController extends Controller {
 
     public function welcomePage() {
         // TODO: Retrieve the list of tasks from the model
-        echo $this->templateEngine->render('todo.twig.html', ['tasks' => $tasks]);
+        echo $this->templateEngine->render('index.html');
     }
 
     public function addTask() {
