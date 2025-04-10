@@ -343,11 +343,38 @@ table tr:hover {
   cursor: pointer;
 }
 
-.filterBtn{
-  padding: 8px 12px; 
-  border: 1px solid #2e86de; 
-  background-color: white; 
-  color: #2e86de; 
-  border-radius: 8px; 
+/* Conteneur général */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+/* Selecteurs de filtre */
+.filterBar select {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  font-size: 14px;
   cursor: pointer;
+  transition: border 0.2s ease;
+}
+
+.filterBar select:hover {
+  border-color: #2e86de;
+}
+
+/* Responsive sur mobile */
+@media (max-width: 600px) {
+  .filterBar {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .filterBar select {
+    width: 100%;
+  }
 }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gestion de Stock</title>
-  <link rel="stylesheet" href="../assets/style.css?v=1.1">
+  <link rel="stylesheet" href="../assets/style.css?v=1.2">
 </head>
 <body>
   <header>
@@ -23,13 +23,30 @@
     <button id="searchBtn" class="searchBtn">
         🔍 Rechercher
     </button>
-    <select id="filterBtn" class="filterBtn">
-        <option value="all">Toutes</option>
-        <option value="tech">Tech</option>
-        <option value="mode">Mode</option>
-        <option value="livres">Livres</option>
-    </select>
-  </section>
+    <!-- Barre de filtres -->
+<div id="filterBar" class="filterBar">
+  <select id="categoryFilter" class="categoryFilter">
+    <option value="all">Toutes les catégories</option>
+    <option value="tech">Tech</option>
+    <option value="mode">Mode</option>
+    <option value="livres">Livres</option>
+  </select>
+
+  <select id="priceFilter" class="priceFilter">
+    <option value="all">Tous les prix</option>
+    <option value="low">Moins de 50€</option>
+    <option value="medium">50€ - 100€</option>
+    <option value="high">Plus de 100€</option>
+  </select>
+
+  <select id="supplierFilter" class="supplierFilter">
+    <option value="all">Tous les fournisseurs</option>
+    <option value="amazon">Amazon</option>
+    <option value="fnac">Fnac</option>
+    <option value="cdiscount">Cdiscount</option>
+  </select>
+</div>
+</section>
 
   <section class="product-section">
     <div class="container">
