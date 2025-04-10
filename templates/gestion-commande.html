@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gestion de Stock</title>
-  <link rel="stylesheet" href="../assets/style.css?v=1.1">
+  <link rel="stylesheet" href="../assets/style.css?v=1.2">
 </head>
 <body>
   <header>
     <div class="container">
-      <h1>Gestion des commandes</h1>
+      <h1>Gestion des commandes de réapprovisionnement</h1>
       <p>Gérez vos commandes ici</p>
     </div>
     <div class="login-button-container">
@@ -19,19 +19,80 @@
 
   <section class="search-section">
     <label for="search">Rechercher une commande :</label>
-    <input type="text" id="search" name="search" placeholder="Recherche par nom ou catégorie...">
+    <input type="text" id="search" name="search" placeholder="Recherche par Numéro...">
     <button id="searchBtn" class="searchBtn">
         🔍 Rechercher
     </button>
-  </section>
+    <!-- Barre de filtres -->
+<div id="filterBar" class="filterBar">
+  <select id="categoryFilter" class="categoryFilter">
+    <option value="all">Toutes</option>
+    <option value="tech">N° 0001</option>
+    <option value="mode">N° 0002</option>
+    <option value="livres">N° 0003</option>
+  </select>
+
+  <select id="supplierFilter" class="supplierFilter">
+    <option value="all">Toutes les catégories</option>
+    <option value="amazon">Tech</option>
+    <option value="fnac">Mode</option>
+    <option value="cdiscount">Livres</option>
+  </select>
+
+  <select id="priceFilter" class="priceFilter">
+    <option value="all">Tous les prix</option>
+    <option value="low">Moins de 50€</option>
+    <option value="medium">50€ - 100€</option>
+    <option value="high">Plus de 100€</option>
+  </select>
+
+  <select id="supplierFilter" class="supplierFilter">
+    <option value="all">Tous les fournisseurs</option>
+    <option value="amazon">Amazon</option>
+    <option value="fnac">Fnac</option>
+    <option value="cdiscount">Cdiscount</option>
+  </select>
+
+</div>
+</section>
 
   <section class="product-section">
     <div class="container">
-      djfsksd
+      <table>
+        <thead>
+          <tr>
+            <th>Numéro de commande</th>
+            <th>Catégorie</th>
+            <th>Prix</th>
+            <th>Quantité</th>
+            <th>Fournisseur</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Commande N° 0001</td>
+            <td>Catégorie 1</td>
+            <td>10 €</td>
+            <td>50</td>
+            <td>fournisseur 1</td>
+            <td><a href="modifier-commande.html">Modifier</a> | <a href="#">Supprimer</a></td>
+          </tr>
+          <tr>
+            <td>Commande N° 0002</td>
+            <td>Catégorie 2</td>
+            <td>15 €</td>
+            <td>30</td>
+            <td>fournisseur 2</td>
+            <td><a href="modifier-commande.html">Modifier</a> | <a href="#">Supprimer</a></td>
+          </tr>
+          <!-- Autres produits ici -->
+        </tbody>
+      </table>
     </div>
   </section>
     <div class="ajouter">
-        <a href="ajouter-produit.html" class="login-button">Ajouter</a>
+        <a href="ajouter-commande.html" class="login-button">Créer +</a>
     </div>
 
   <footer>
