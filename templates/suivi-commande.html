@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Suivi de Commande</title>
+  <link rel="stylesheet" href="../assets/style.css"> <!-- Tu peux aussi coller le CSS ci-dessous dans un <style> -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<header>
+    <div class="container">
+      <h1>Suivre une commande</h1>
+      <p>Suivez vos commande ici</p>
+    </div>
+    <div class="login-button-container">
+        <a href="gestion-commande.html" class="login-button">Retour</a>
+        <a href="index.html" class="login-button">Revenir à l'accueil</a>
+    </div>
+  </header>
+<body>
+    <div class="progress-tracker">
+        <div class="step done">
+          <div class="circle">1</div>
+          <span>Commandée</span>
+        </div>
+        <div class="line"></div>
+        <div class="step done">
+          <div class="circle">2</div>
+          <span>Expédiée</span>
+        </div>
+        <div class="line"></div>
+        <div class="step active">
+          <div class="circle">3</div>
+          <span>En livraison</span>
+        </div>
+        <div class="line"></div>
+        <div class="step">
+          <div class="circle">4</div>
+          <span>Livrée</span>
+        </div>
+      </div>
+      <section class="product-section">
+        <div class="container">
+          <table>
+            <thead>
+              <tr>
+                <th>Numéro de commande</th>
+                <th>Catégorie</th>
+                <th>Prix</th>
+                <th>Quantité</th>
+                <th>Fournisseur</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Commande N° 0001</td>
+                <td>Catégorie 1</td>
+                <td>10 €</td>
+                <td>50</td>
+                <td>fournisseur 1</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+</body>
+</html>
