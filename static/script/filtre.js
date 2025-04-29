@@ -1,29 +1,30 @@
-const searchBtn = document.getElementById('searchBtn');
-const filterBtn = document.getElementById('filterBtn');
-const filtersPanel = document.getElementById('filtersPanel');
 
-filterBtn.addEventListener('click', () => {
-  filtersPanel.style.display = (filtersPanel.style.display === 'none' || filtersPanel.style.display === '') ? 'block' : 'none';
-});
+ document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("search");
+    const searchBtn = document.getElementById("searchBtn");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const productCards = document.querySelectorAll(".product-card");
 
-searchBtn.addEventListener('click', () => {
-  const searchValue = searchInput.value.toLowerCase();
-  const selectedCategory = document.getElementById('categoryFilter').value;
+    function filterProducts() {
+      const searchValue = searchInput.value.toLowerCase();
+      const selectedCategory = categoryFilter.value;
 
-  // Appelle ici ta fonction de filtre (comme dans l’exemple précédent)
-  filterArticles(searchValue, selectedCategory);
-});
+      productCards.forEach(card => {
+        const name = card.querySelector("h4").textContent.toLowerCase();
+        const categoryText = card.querySelector("p").textContent.toLowerCase();
 
-function filterArticles(searchValue, selectedCategory) {
-  const articles = document.querySelectorAll('#articleList li');
+        const matchSearch = name.includes(searchValue);
+        const matchCategory = selectedCategory === "all" || categoryText.includes(selectedCategory);
 
-  articles.forEach(article => {
-    const name = article.dataset.name.toLowerCase();
-    const category = article.dataset.category;
+        if (matchSearch && matchCategory) {
+          card.style.display = "flex";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    }
 
-    const matchSearch = name.includes(searchValue);
-    const matchCategory = selectedCategory === 'all' || selectedCategory === category;
-
-    article.style.display = (matchSearch && matchCategory) ? '' : 'none';
+    searchBtn.addEventListener("click", filterProducts);
+    categoryFilter.addEventListener("change", filterProducts);
   });
-}
+
