@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Gestion de Stock</title>
-  <link rel="stylesheet" href="../assets/style.css?=1.1" />
+  <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
   <header>
@@ -12,13 +12,11 @@
   </header>
 
   <main>
-        {% block content %}{% endblock %}
-    </main>
+    {% block content %}{% endblock %}
+  </main>
 
     <footer>
-    <div class="container">
-      <p>&copy; 2025 - CPI A2 INFO | Projet de gestion de stock</p>
-    </div>
+        {% include 'footer.html.twig' %}
   </footer>
 </body>
 </html>
