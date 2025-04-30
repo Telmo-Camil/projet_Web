@@ -1,5 +1,20 @@
  {% extends 'base.html.twig' %}
  
+{% block header %}
+
+<header>
+      <div>
+        <a href="index.php?uri=/" class="title">Gestion de Stock</a> 
+        <p>Suivi, organisation et contrôle simplifiés de vos produits</p>
+      </div>
+      <div class="login-button-container">
+        <a href="index.php?uri=login" class="login-button">Se connecter</a>
+        <a href="index.php?uri=sign" class="login-button">S'inscrire</a>
+      </div>
+  </header>
+
+{% endblock %}
+
  {% block content %}
  
  <main>
@@ -13,10 +28,10 @@
   <nav class="nav-section">
     <div class="container nav-grid">
       <a href="index.php?uri=dashboard">📊 Tableau de bord</a>
-      <a href="index.php?uri=gestion-produit">🧴 Produits</a>
-      <a href="index.php?uri=gestion-fournisseurs">🚚 Fournisseurs</a>
-      <a href="index.php?uri=gestion-commande">📦 Commandes</a>
-      <a href="index.php?uri=gestion-entrée">🏷️ Gestion des entrées</a>
+      <a href="index.php?uri=product-management">🧴 Produits</a>
+      <a href="index.php?uri=supplier-management">🚚 Fournisseurs</a>
+      <a href="index.php?uri=order-management">📦 Commandes</a>
+      <a href="index.php?uri=entrance-management">🏷️ Gestion des entrées</a>
       <a href="#">📜 Historique</a>
       <a href="#">📝 Rapports</a>
     </div>

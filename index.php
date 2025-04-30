@@ -85,7 +85,7 @@ switch ($uri) {
         $controller->settings();
         break;
 
-    case 'sign-up':
+    case 'sign':
         $controller->sign();
         break;
 

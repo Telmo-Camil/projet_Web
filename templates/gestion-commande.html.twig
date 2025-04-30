@@ -1,5 +1,21 @@
 {% extends 'base.html.twig' %}
  
+ 
+  {% block header %}
+
+<header>
+    <div class="container">
+     <h1>Gestion des commandes de réapprovisionnement</h1>
+      <p>Gérez vos commandes ici</p>
+    </div>
+    <div class="login-button-container">
+        <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
+    </div>
+  </header>
+
+{% endblock %}
+ 
+ 
  {% block content %}
  
   <main>
@@ -62,7 +78,7 @@
             <td>10 €</td>
             <td>50</td>
             <td>fournisseur 1</td>
-            <td><a href="index.php?uri=modifier-commande">Modifier</a> | <a href="#">Supprimer</a> | <a href="index.php?uri=suivi-commande">Suivi</a></td>
+            <td><a href="index.php?uri=modify-order">Modifier</a> | <a href="#">Supprimer</a> | <a href="index.php?uri=tracking-order">Suivi</a></td>
           </tr>
           <tr>
             <td>Commande N° 0002</td>
@@ -70,7 +86,7 @@
             <td>15 €</td>
             <td>30</td>
             <td>fournisseur 2</td>
-            <td><a href="index.php?uri=modifier-commande">Modifier</a> | <a href="#">Supprimer</a> | <a href="index.php?uri=suivi-commande">Suivi</a></td>
+            <td><a href="index.php?uri=modify-order">Modifier</a> | <a href="#">Supprimer</a> | <a href="index.php?uri=tracking-order">Suivi</a></td>
           </tr>
           <!-- Autres produits ici -->
         </tbody>
@@ -78,7 +94,7 @@
     </div>
   </section>
     <div class="ajouter">
-        <a href="index.php?uri=ajouter-commande" class="login-button">Créer +</a>
+        <a href="index.php?uri=add-order" class="login-button">Créer +</a>
     </div>
   </main>
 

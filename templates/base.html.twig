@@ -7,14 +7,15 @@
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
-  <header>
-    {% include 'header.html.twig' %}
-  </header>
+
+ {% block header %}{% endblock %}
 
     {% block content %}{% endblock %}
 
     <footer>
         {% include 'footer.html.twig' %}
   </footer>
+
+  {% block script %}{% endblock %}
 </body>
 </html>

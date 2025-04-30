@@ -1,5 +1,21 @@
 {% extends 'base.html.twig' %}
  
+
+
+  {% block header %}
+
+<header>
+    <div class="container">
+      <h1>Gestion des Fournisseurs</h1>
+      <p>Ajoutez, modifiez ou supprimez des fournisseurs</p>
+    </div>
+    <div class="login-button-container">
+      <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
+    </div>
+  </header>
+
+{% endblock %}
+
  {% block content %}
  
   <main>
@@ -46,21 +62,21 @@
             <td>contact@fournisseura.com</td>
             <td>01 23 45 67 89</td>
             <td>Paris</td>
-            <td><a href="index.php?uri=modifier-fournisseur">Modifier</a> | <a href="#">Supprimer</a></td>
+            <td><a href="index.php?uri=modify-supplier">Modifier</a> | <a href="#">Supprimer</a></td>
           </tr>
           <tr>
             <td>Fournisseur B</td>
             <td>info@fournisseurb.com</td>
             <td>04 56 78 90 12</td>
             <td>Lyon</td>
-            <td><a href="index.php?uri=modifier-fournisseur">Modifier</a> | <a href="#">Supprimer</a></td>
+            <td><a href="index.php?uri=modify-supplier">Modifier</a> | <a href="#">Supprimer</a></td>
           </tr>
         </tbody>
       </table>
     </div>
   </section>
   <div class="ajouter">
-    <a href="index.php?uri=ajouter-fournisseur" class="login-button">Ajouter</a>
+    <a href="index.php?uri=add-supplier" class="login-button">Ajouter</a>
 </div>
 </main>
  {% endblock %}
