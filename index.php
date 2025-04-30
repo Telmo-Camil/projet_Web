@@ -28,4 +28,73 @@ switch ($uri) {
     case '/':
         $controller->welcomePage();
         break;
+    
+    case 'add-order':
+        $controller->addOrder();
+        break;
+
+    case 'add-supplier':
+        $controller->addSupplier();
+        break;
+    
+    case 'add-product':
+        $controller->addproduct();
+        break;
+
+    case 'dashboard':
+        $controller->dashboard();
+        break;
+
+    case 'order-management':
+        $controller->orderManagement();
+        break;
+
+    case 'entrance-management':
+        $controller->entranceManagement();
+        break;
+
+    case 'supplier-management':
+        $controller->supplierManagement();
+        break;
+    
+    case 'product-management':
+        $controller->productManagement();
+        break;
+
+    case 'login':
+        $controller->login();
+        break;
+
+    case 'modify-order':
+        $controller->modifyOrder();
+        break;
+
+    case 'modify-supplier':
+        $controller->modifySupplier();
+        break;
+
+    case 'modify-product':
+        $controller->modifyProduct();
+        break;
+    
+    case 'product':
+        $controller->product();
+        break;
+
+    case 'settings':
+        $controller->settings();
+        break;
+
+    case 'sign-up':
+        $controller->sign();
+        break;
+
+    case 'tracking-order':
+        $controller->orderTracking();
+        break;
     }
+
+
+
+   
+    
