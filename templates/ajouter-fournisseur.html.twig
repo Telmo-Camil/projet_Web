@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+ 
+ {% block content %}
+ 
+ <main>
+ <h3>Ajouter un nouveau fournisseur</h3>
+      <form class="crud-form">
+        <label for="nom-fournisseur">Nom du fournisseur :</label>
+        <input type="text" id="nom-produit" name="nom-produit" required>
+
+        <label for="email">Email :</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="telephone">Téléphone :</label>
+        <input type="tel" id="tel" name="tel" pattern="^\+?[0-9\s\-]{7,20}$" required>
+
+        <label for="ville">Ville :</label>
+        <input type="text" id="ville" name="ville" required>
+
+        <button type="submit">Ajouter le fournisseur</button>
+      </form>
+</main>
+ {% endblock %}

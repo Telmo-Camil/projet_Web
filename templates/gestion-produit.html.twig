@@ -1,6 +1,9 @@
+{% extends 'base.html.twig' %}
+
 {% block content %}
  
-<section class="search-section">
+<main>
+        <section class="search-section">
           <label for="search">Rechercher une catégorie :</label>
           <input type="text" id="search" name="search" placeholder="Recherche une catégorie...">
           <button id="searchBtn" class="searchBtn">
@@ -18,5 +21,7 @@
           <a href="produit.html">produit menager</a>
         </div>
       </nav>
+        <!-- Ajoute d'autres produits ici -->
+      </main>
 
  {% endblock %}

@@ -1,22 +1,8 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gestion de Stock</title>
-  <link rel="stylesheet" href="../assets/style.css?v=1.1">
-</head>
-<body>
-  <header>
-    <div class="container">
-      <h1>Connexion</h1>
-      <p>Accédez à votre espace de gestion</p>
-    </div>
-    <div class="login-button-container">
-        <a href="index.html" class="login-button">Revenir à l'accueil</a>
-    </div>
-  </header>
-<main>
+ {% extends 'base.html.twig' %}
+ 
+ {% block content %}
+ 
+ <main>
   <section class="login-section">
     <div class="container login-card">
       <form action="dashboard.html" method="post">
@@ -36,10 +22,6 @@
     </div>
   </section>
 </main>
-  <footer>
-    <div class="container">
-      <p>&copy; 2025 - CPI A2 INFO | Projet de gestion de stock</p>
-    </div>
-  </footer>
-</body>
-</html>
+ {% endblock %}
+
+ 

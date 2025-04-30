@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+ 
+ {% block content %}
+ 
+  <main class="container">
+
+    <!-- Statistiques synthétiques -->
+    <section class="dashboard-stats">
+      <div class="stat-card">
+        <h2>320</h2>
+        <p>Produits en stock</p>
+      </div>
+      <div class="stat-card">
+        <h2>8</h2>
+        <p>Produits en rupture</p>
+      </div>
+      <div class="stat-card">
+        <h2>124</h2>
+        <p>Ventes ce mois-ci</p>
+      </div>
+      <div class="stat-card">
+        <h2>7</h2>
+        <p>Commandes en attente</p>
+      </div>
+    </section>
+
+    <!-- Alertes de rupture -->
+    <section class="alerts-section">
+      <h2>⚠️ Alertes - Produits en rupture</h2>
+      <div class="alert-list">
+        <div class="alert-item">
+          <span>Produit A</span> est en rupture de stock.
+        </div>
+        <div class="alert-item">
+          <span>Produit B</span> est en dessous du seuil critique.
+        </div>
+        <div class="alert-item">
+          <span>Produit C</span> n’a pas été approvisionné depuis 30 jours.
+        </div>
+      </div>
+    </section>
+
+    <!-- Graphique de ventes -->
+    <section class="charts-placeholder">
+      <h2>📊 Statistiques des ventes</h2>
+      <canvas id="salesChart" width="800" height="400"></canvas>
+    </section>
+
+  </main>
+
+ {% endblock %}
+
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../static/script/dashboard.js"></script>
