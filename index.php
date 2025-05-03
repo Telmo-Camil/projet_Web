@@ -1,29 +1,42 @@
 <?php
 
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 use Twig\Loader\FilesystemLoader;
 use Twig\Environment;
+use App\Controllers\ProductController;
+
+// Configuration de la base de données
+$dbConfig = require_once __DIR__ . '/config/database.php';
+
+// Connexion à la base de données
+try {
+    $db = new PDO(
+        "mysql:host={$dbConfig['host']};dbname={$dbConfig['dbname']};charset=utf8",
+        $dbConfig['username'],
+        $dbConfig['password']
+    );
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die('Erreur de connexion : ' . $e->getMessage());
+}
 
 // Configuration de Twig
-$loader = new FilesystemLoader('templates');
+$loader = new FilesystemLoader(__DIR__ . '/templates');
 $twig = new Environment($loader, [
-    'cache' => false,  // Désactiver le cache en développement
+    'cache' => false,
     'debug' => true
 ]);
 
+// Récupération de l'URI
+$uri = $_GET['uri'] ?? '/';
+$action = $_GET['action'] ?? 'index';
 
-if (isset($_GET['uri'])) {
-    $uri = $_GET['uri'];
-} else {
-    $uri = '/';
-}
-
-
-// Instancier le contrôleur avec Twig
+// Instanciation des contrôleurs
 $controller = new \App\Controllers\ControllerPage($twig);
+$productController = new ProductController($twig, $db);
 
-
+// Routage
 switch ($uri) {
     case '/':
         $controller->welcomePage();
@@ -78,7 +91,7 @@ switch ($uri) {
         break;
     
     case 'product':
-        $controller->product();
+        $productController->index();
         break;
 
     case 'settings':
@@ -92,9 +105,8 @@ switch ($uri) {
     case 'tracking-order':
         $controller->orderTracking();
         break;
-    }
+}
 
 
 
-   
-    
+

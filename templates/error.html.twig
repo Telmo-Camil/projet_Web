@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block header %}
+<header>
+    <div class="container">
+        <h1>Erreur</h1>
+    </div>
+    <div class="login-button-container">
+        <a href="index.php" class="login-button">Retour à l'accueil</a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="error-container">
+        <div class="error-message">
+            <h2>🚨 Une erreur est survenue</h2>
+            <p>{{ message }}</p>
+        </div>
+    </div>
+</main>
+{% endblock %}
