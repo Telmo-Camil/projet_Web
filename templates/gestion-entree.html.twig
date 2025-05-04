@@ -26,15 +26,61 @@
         {% endif %}
 
         <section class="search-section">
-            <form action="index.php" method="GET">
+            <form action="index.php" method="GET" class="filters-form">
                 <input type="hidden" name="uri" value="gestion-entree">
-                <label for="search">Rechercher une entrée :</label>
-                <input type="text" id="search" name="search" 
-                       value="{{ search }}" 
-                       placeholder="Rechercher par produit, date...">
-                <button type="submit" class="searchBtn">
-                    🔍 Rechercher
+                
+                <div class="filter-group">
+                    <label for="search">Recherche :</label>
+                    <input type="text" id="search" name="search" 
+                           value="{{ search }}" 
+                           placeholder="Produit ou fournisseur...">
+                </div>
+
+                <div class="filter-group">
+                    <label for="date_debut">Date début :</label>
+                    <input type="date" id="date_debut" name="date_debut" 
+                           value="{{ date_debut }}">
+                </div>
+
+                <div class="filter-group">
+                    <label for="date_fin">Date fin :</label>
+                    <input type="date" id="date_fin" name="date_fin" 
+                           value="{{ date_fin }}">
+                </div>
+
+                <div class="filter-group">
+                    <label for="supplier">Fournisseur :</label>
+                    <select name="supplier" id="supplier">
+                        <option value="">Tous les fournisseurs</option>
+                        {% for supplier in suppliers %}
+                            <option value="{{ supplier.id }}" 
+                                    {% if selected_supplier == supplier.id %}selected{% endif %}>
+                                {{ supplier.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="category">Catégorie :</label>
+                    <select name="category" id="category">
+                        <option value="">Toutes les catégories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}"
+                                    {% if selected_category == category.id %}selected{% endif %}>
+                                {{ category.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-filter">
+                    🔍 Filtrer
                 </button>
+                
+                <a href="index.php?uri=gestion-entree" class="btn-reset">
+                    Réinitialiser les filtres
+                </a>
             </form>
         </section>
 
@@ -81,6 +127,41 @@
                 </table>
             </div>
         </section>
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        {% if deliveredOrders is defined and deliveredOrders is not empty %}
+            <table class="entries-table">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Fournisseur</th>
+                        <th>Quantité</th>
+                        <th>Date de livraison</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in deliveredOrders %}
+                        <tr>
+                            <td>{{ order.product_name }}</td>
+                            <td>{{ order.supplier_name }}</td>
+                            <td>{{ order.quantite }}</td>
+                            <td>{{ order.date_livraison|date('d/m/Y') }}</td>
+                            <td>
+                                <button class="btn-action" onclick="validateEntry({{ order.id }})">
+                                    Valider l'entrée
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data"></p>
+        {% endif %}
     </div>
 </main>
 
@@ -90,5 +171,6 @@ function confirmDelete(id) {
         window.location.href = 'index.php?uri=delete-entry&id=' + id;
     }
 }
+
 </script>
 {% endblock %}

@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -33,12 +34,24 @@ $twig = new Environment($loader, [
 ]);
 $twig->addExtension(new \Twig\Extension\DebugExtension());
 
+$twig->addGlobal('app', [
+    'session' => [
+        'get' => function($key) {
+            return $_SESSION[$key] ?? null;
+        }
+    ]
+]);
+
+$twig->addGlobal('session', [
+    'user' => $_SESSION['user'] ?? null
+]);
+
 // Récupération de l'URI
 $uri = $_GET['uri'] ?? '/';
 $action = $_GET['action'] ?? 'index';
 
 // Instanciation des contrôleurs
-$controller = new \App\Controllers\ControllerPage($twig);
+$controller = new \App\Controllers\ControllerPage($twig, $db);
 $productController = new ProductController($twig, $db);
 $categoryController = new \App\Controllers\CategoryController($twig, $db);
 
@@ -86,7 +99,31 @@ switch ($uri) {
         break;
 
     case 'login':
-        $controller->login();
+        $authController = new App\Controllers\AuthController($twig, $db);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $authController->login();
+        } else {
+            $authController->showLoginForm();
+        }
+        break;
+
+    case 'sign':
+        $authController = new App\Controllers\AuthController($twig, $db);
+        $authController->showRegisterForm();
+        break;
+
+    case 'register':
+        $authController = new App\Controllers\AuthController($twig, $db);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $authController->register();
+        } else {
+            $authController->showRegisterForm();
+        }
+        break;
+
+    case 'logout':
+        $authController = new App\Controllers\AuthController($twig, $db);
+        $authController->logout();
         break;
 
     case 'modify-order':
@@ -119,10 +156,6 @@ switch ($uri) {
 
     case 'settings':
         $controller->settings();
-        break;
-
-    case 'sign':
-        $controller->sign();
         break;
 
     case 'tracking-order':

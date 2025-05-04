@@ -1,26 +1,44 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestion de Stock</title>
-  <link rel="stylesheet" href="assets/css/style.css" />
-  <script src="assets/script/products.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+    <header class="main-header">
+        <div class="header-content">
+            <div class="nav-buttons">
+                {% if current_page is not defined or current_page != 'index' %}
+                    <a href="javascript:history.back()" class="back-btn">← Retour</a>
+                {% endif %}
+                <div class="logo-container">
+                    <h1>Stock'n Go</h1>
+                </div>
+            </div>
+            
+            {% if session.user %}
+                <div class="user-info">
+                    <span class="user-name">{{ session.user.prenom }} {{ session.user.nom }}</span>
+                    <span class="user-role">({{ session.user.role|capitalize }})</span>
+                    {% if session.user.role == 'admin' %}
+                        <a href="index.php?uri=sign" class="create-account-btn">Créer un compte</a>
+                    {% endif %}
+                    <a href="index.php?uri=logout" class="logout-btn">Déconnexion</a>
+                </div>
+            {% else %}
+                <div class="auth-buttons">
+                    <a href="index.php?uri=login" class="login-btn">Connexion</a>
+                </div>
+            {% endif %}
+        </div>
+    </header>
 
- {% block header %}{% endblock %}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
 
-    {% block content %}{% endblock %}
-
-    <footer>
-        {% include 'footer.html.twig' %}
-  </footer>
-
-  {% block script %}{% endblock %}
-
-  {% block javascripts %}
-    <script src="assets/js/orders.js"></script>
-  {% endblock %}
+    {% block javascripts %}{% endblock %}
 </body>
 </html>

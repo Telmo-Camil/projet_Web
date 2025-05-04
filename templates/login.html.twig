@@ -1,41 +1,30 @@
- {% extends 'base.html.twig' %}
- 
-{% block header %}
+{% extends 'base.html.twig' %}
 
-<header>
-    <div class="container">
-      <h1>Connexion</h1>
-      <p>Accédez à votre espace de gestion</p>
-    </div>
-    <div class="login-button-container">
-        <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
-    </div>
-  </header>
+{% block title %}Connexion{% endblock %}
 
-{% endblock %}
+{% block content %}
+<div class="container">
+    <section class="form-standard">
+        <h2>Connexion</h2>
+    <form method="POST" action="index.php?uri=login" class="auth-form">
+        
+        
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
 
- {% block content %}
- 
- <main>
-  <section class="login-section">
-    <div class="container login-card">
-      <form action="index.php?uri=dashboard" method="post">
-        <label for="email">Adresse e-mail</label>
-        <input type="email" id="email" name="email" required placeholder="ex: utilisateur@mail.com">
-
-        <label for="password">Mot de passe</label>
-        <input type="password" id="password" name="password" required placeholder="********">
-
-        <button type="submit">Se connecter</button>
-        <div class="login-help">
-        <p><a href="index.php?uri=settings">Mot de passe oublié ?</a></p>
-        <p><a href="index.php?uri=sign">S'inscrire</a></p>
+        <div class="form-group">
+            <label for="email">Email :</label>
+            <input type="email" id="email" name="email" required>
         </div>
-      </form>
-      
-    </div>
-  </section>
-</main>
- {% endblock %}
 
- 
+        <div class="form-group">
+            <label for="password">Mot de passe :</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <button type="submit" class="btn-primary">Se connecter</button>
+    </form>
+    </section>
+</div>
+{% endblock %}

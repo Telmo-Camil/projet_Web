@@ -7,15 +7,19 @@ use Twig\Environment;
 class ControllerPage
 {
     private $twig;
+    private $db;
 
-    public function __construct(Environment $twig)
+    public function __construct(Environment $twig, \PDO $db)
     {
         $this->twig = $twig;
+        $this->db = $db;
     }
 
     public function welcomePage()
     {
-        echo $this->twig->render('index.html.twig');
+        echo $this->twig->render('index.html.twig', [
+            'current_page' => 'index'
+        ]);
     }
 
     public function addOrder()
