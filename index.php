@@ -6,6 +6,8 @@ use Twig\Loader\FilesystemLoader;
 use Twig\Environment;
 use App\Controllers\ProductController;
 use App\Controllers\CategoryController;
+use App\Controllers\OrderController;
+use App\Controllers\SupplierController; // Add this line
 
 // Configuration de la base de données
 $dbConfig = require_once __DIR__ . '/config/database.php';
@@ -46,11 +48,13 @@ switch ($uri) {
         break;
     
     case 'add-order':
-        $controller->addOrder();
+        $orderController = new OrderController($twig, $db);
+        $orderController->add();
         break;
 
     case 'add-supplier':
-        $controller->addSupplier();
+        $supplierController = new SupplierController($twig, $db);
+        $supplierController->add();
         break;
     
     case 'add-product':
@@ -62,7 +66,8 @@ switch ($uri) {
         break;
 
     case 'order-management':
-        $controller->orderManagement();
+        $orderController = new OrderController($twig, $db);
+        $orderController->listOrders();
         break;
 
     case 'entrance-management':
@@ -70,7 +75,8 @@ switch ($uri) {
         break;
 
     case 'supplier-management':
-        $controller->supplierManagement();
+        $supplierController = new SupplierController($twig, $db);
+        $supplierController->listSuppliers();
         break;
     
     case 'product-management':
@@ -82,7 +88,13 @@ switch ($uri) {
         break;
 
     case 'modify-order':
-        $controller->modifyOrder();
+        $orderController = new OrderController($twig, $db);
+        $orderController->modifyOrder();
+        break;
+
+    case 'delete-order':
+        $orderController = new OrderController($twig, $db);
+        $orderController->deleteOrder();
         break;
 
     case 'modify-supplier':
@@ -103,6 +115,16 @@ switch ($uri) {
 
     case 'sign':
         $controller->sign();
+        break;
+
+    case 'tracking-order':
+        $orderController = new OrderController($twig, $db);
+        $orderController->trackOrder();
+        break;
+
+    case 'update-order-status':
+        $orderController = new OrderController($twig, $db);
+        $orderController->updateOrderStatus();
         break;
 
     case 'tracking-order':

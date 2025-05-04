@@ -911,3 +911,171 @@ table tr:hover {
     }
 }
 
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+/* Styles pour "en attente" */
+.status-badge.status-en-attente,
+.status-badge.status-en_attente {
+    background-color: #ffd700;
+    color: #000;
+}
+
+/* Styles pour "en préparation" */
+.status-badge.status-en-preparation,
+.status-badge.status-en_preparation {
+    background-color: #ff9800;
+    color: white;
+}
+
+/* Styles pour "expédiée" */
+.status-badge.status-expediee,
+.status-badge.status-expédiée {
+    background-color: #2196F3;
+    color: white;
+}
+
+/* Styles pour "en transit" */
+.status-badge.status-en-transit,
+.status-badge.status-en_transit {
+    background-color: #9c27b0;
+    color: white;
+}
+
+/* Styles pour "livrée" */
+.status-badge.status-livree,
+.status-badge.status-livrée {
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Styles pour "annulée" */
+.status-badge.status-annulee,
+.status-badge.status-annulée {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Style par défaut pour les statuts non reconnus */
+.status-badge:not([class*="status-"]) {
+    background-color: #6c757d;
+    color: white;
+}
+
+.status-badge small {
+    display: block;
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+    opacity: 0.8;
+}
+
+.tracking-timeline {
+    max-width: 800px;
+    margin: 2rem auto;
+    position: relative;
+    padding: 20px 0;
+}
+
+.tracking-timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50px;
+    height: 100%;
+    width: 4px;
+    background: #ddd;
+}
+
+.timeline-step {
+    display: flex;
+    margin-bottom: 30px;
+    position: relative;
+    opacity: 0.5;
+}
+
+.timeline-step.active {
+    opacity: 1;
+}
+
+.timeline-step::before {
+    content: '';
+    position: absolute;
+    left: 50px;
+    top: 25px;
+    width: 20px;
+    height: 4px;
+    background: #ddd;
+}
+
+.timeline-step.active::before {
+    background: var(--primary-color);
+}
+
+.step-icon {
+    width: 50px;
+    height: 50px;
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.timeline-step.active .step-icon {
+    border-color: var(--primary-color);
+}
+
+.step-content {
+    margin-left: 30px;
+    padding: 10px;
+}
+
+.step-content h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.step-content p {
+    margin: 5px 0 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.order-details {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin-bottom: 2rem;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 1rem;
+}
+
+.detail-item {
+    padding: 10px;
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var (--shadow);
+}
+
+.status-update-form {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: var(--border-radius);
+}
+

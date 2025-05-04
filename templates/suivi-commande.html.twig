@@ -1,69 +1,123 @@
- {% extends 'base.html.twig' %}
- 
-{% block header %}
+{% extends 'base.html.twig' %}
 
+{% block header %}
 <header>
     <div class="container">
-      <h1>Suivre une commande</h1>
-      <p>Suivez vos commande ici</p>
+        <h1>Suivi de commande</h1>
+        <p>Commande #{{ order.id }}</p>
     </div>
     <div class="login-button-container">
         <a href="index.php?uri=order-management" class="login-button">Retour</a>
-        <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
     </div>
-  </header>
-
+</header>
 {% endblock %}
 
- {% block content %}
- 
+{% block content %}
 <main>
-    <div class="progress-tracker">
-        <div class="step done">
-          <div class="circle">1</div>
-          <span>Commandée</span>
-        </div>
-        <div class="line"></div>
-        <div class="step done">
-          <div class="circle">2</div>
-          <span>Expédiée</span>
-        </div>
-        <div class="line"></div>
-        <div class="step active">
-          <div class="circle">3</div>
-          <span>En livraison</span>
-        </div>
-        <div class="line"></div>
-        <div class="step">
-          <div class="circle">4</div>
-          <span>Livrée</span>
-        </div>
-      </div>
-      <section class="product-section">
-        <div class="container">
-          <table>
-            <thead>
-              <tr>
-                <th>Numéro de commande</th>
-                <th>Catégorie</th>
-                <th>Prix</th>
-                <th>Quantité</th>
-                <th>Fournisseur</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Commande N° 0001</td>
-                <td>Catégorie 1</td>
-                <td>10 €</td>
-                <td>50</td>
-                <td>fournisseur 1</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
- {% endblock %}
+    <div class="container">
+        {% if error_message is defined %}
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
 
- 
+        <div class="order-details">
+            <h2>Détails de la commande #{{ order.id }}</h2>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <strong>Produit :</strong> {{ order.product_name }}
+                </div>
+                <div class="detail-item">
+                    <strong>Quantité :</strong> {{ order.quantite }}
+                </div>
+                <div class="detail-item">
+                    <strong>Prix unitaire :</strong> {{ order.prix }} €
+                </div>
+                <div class="detail-item">
+                    <strong>Fournisseur :</strong> {{ order.supplier_name }}
+                </div>
+            </div>
+        </div>
+
+        <div class="tracking-timeline">
+            <!-- Étape Commande -->
+            <div class="timeline-step active" data-step="commande">
+                <div class="step-icon">📋</div>
+                <div class="step-content">
+                    <h3>Commande enregistrée</h3>
+                    <p class="date-effective">{{ order.date_commande|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+
+            <!-- Étape Préparation -->
+            <div class="timeline-step {% if order.statut in ['en_preparation', 'expediee', 'en_transit', 'livrée'] %}active{% endif %}" data-step="preparation">
+                <div class="step-icon">🔧</div>
+                <div class="step-content">
+                    <h3>Préparation</h3>
+                    {% if order.date_preparation %}
+                        <p class="date-effective">Début : {{ order.date_preparation|date('d/m/Y H:i') }}</p>
+                    {% endif %}
+                    <p class="date-prevue">Prévue : {{ order.date_preparation_prevue|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+
+            <!-- Étape Expédition -->
+            <div class="timeline-step {% if order.statut in ['expediee', 'en_transit', 'livrée'] %}active{% endif %}" data-step="expedition">
+                <div class="step-icon">📦</div>
+                <div class="step-content">
+                    <h3>Expédition</h3>
+                    {% if order.date_expedition %}
+                        <p class="date-effective">Expédiée le : {{ order.date_expedition|date('d/m/Y H:i') }}</p>
+                    {% endif %}
+                    <p class="date-prevue">Prévue : {{ order.date_expedition_prevue|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+
+            <!-- Étape Transit -->
+            <div class="timeline-step {% if order.statut in ['en_transit', 'livrée'] %}active{% endif %}" data-step="transit">
+                <div class="step-icon">🚚</div>
+                <div class="step-content">
+                    <h3>Transit</h3>
+                    {% if order.date_transit %}
+                        <p class="date-effective">Début transit : {{ order.date_transit|date('d/m/Y H:i') }}</p>
+                    {% endif %}
+                    <p class="date-prevue">Prévu : {{ order.date_transit_prevue|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+
+            <!-- Étape Livraison -->
+            <div class="timeline-step {% if order.statut == 'livrée' %}active{% endif %}" data-step="livree">
+                <div class="step-icon">✅</div>
+                <div class="step-content">
+                    <h3>Livraison</h3>
+                    {% if order.date_livraison_effective %}
+                        <p class="date-effective">Livrée le : {{ order.date_livraison_effective|date('d/m/Y H:i') }}</p>
+                    {% endif %}
+                    <p class="date-prevue">Prévue : {{ order.date_livraison|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulaire de mise à jour du statut -->
+        {% if order.statut in ['en_attente', 'en_preparation', 'expediee', 'en_transit'] %}
+            <form action="index.php?uri=update-order-status&id={{ order.id }}" method="POST" class="status-update-form">
+                <div class="form-group">
+                    <label for="new_status">Mettre à jour le statut :</label>
+                    <select id="new_status" name="new_status" required>
+                        {% if order.statut == 'en_attente' %}
+                            <option value="en_preparation">Débuter la préparation</option>
+                        {% elseif order.statut == 'en_preparation' %}
+                            <option value="expediee">Marquer comme expédiée</option>
+                        {% elseif order.statut == 'expediee' %}
+                            <option value="en_transit">Marquer en transit</option>
+                        {% elseif order.statut == 'en_transit' %}
+                            <option value="livrée">Marquer comme livrée</option>
+                        {% endif %}
+                        <option value="annulée">Annuler la commande</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Mettre à jour le statut</button>
+            </form>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}
+

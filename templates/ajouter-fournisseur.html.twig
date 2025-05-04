@@ -9,7 +9,6 @@
     </div>
     <div class="login-button-container">
         <a href="index.php?uri=supplier-management" class="login-button">Retour</a>
-        <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
     </div>
   </header>
 
@@ -19,21 +18,36 @@
  {% block content %}
  
  <main>
- <h3>Ajouter un nouveau fournisseur</h3>
-      <form class="crud-form">
-        <label for="nom-fournisseur">Nom du fournisseur :</label>
-        <input type="text" id="nom-produit" name="nom-produit" required>
+    <div class="container">
+        {% if error_message is defined %}
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
 
-        <label for="email">Email :</label>
-        <input type="email" id="email" name="email" required>
+        <form action="index.php?uri=add-supplier" method="POST" class="supplier-form">
+            <div class="form-group">
+                <label for="nom">Nom du fournisseur :</label>
+                <input type="text" id="nom" name="nom" required>
+            </div>
 
-        <label for="telephone">Téléphone :</label>
-        <input type="tel" id="tel" name="tel" pattern="^\+?[0-9\s\-]{7,20}$" required>
+            <div class="form-group">
+                <label for="email">Email :</label>
+                <input type="email" id="email" name="email" required>
+            </div>
 
-        <label for="ville">Ville :</label>
-        <input type="text" id="ville" name="ville" required>
+            <div class="form-group">
+                <label for="telephone">Téléphone :</label>
+                <input type="tel" id="telephone" name="telephone" required>
+            </div>
 
-        <button type="submit">Ajouter le fournisseur</button>
-      </form>
+            <div class="form-group">
+                <label for="adresse">Adresse :</label>
+                <textarea id="adresse" name="adresse" required></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Ajouter le fournisseur</button>
+            </div>
+        </form>
+    </div>
 </main>
  {% endblock %}

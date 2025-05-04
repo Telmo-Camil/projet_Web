@@ -59,12 +59,24 @@ CREATE TABLE out_stock (
 
 CREATE TABLE orders (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  product_id INT,
-  quantite INT,
-  statut ENUM('en attente', 'livrée', 'annulée') DEFAULT 'en attente',
+  product_name VARCHAR(150) NOT NULL,
+  prix DECIMAL(10,2) NOT NULL,
+  quantite INT NOT NULL,
+  categories_id INT,
+  supplier_id INT,
+  statut ENUM('en attente', 'en_preparation', 'expediee', 'en_transit', 'livrée', 'annulée') DEFAULT 'en attente',
   date_commande DATETIME DEFAULT CURRENT_TIMESTAMP,
+  date_livraison DATE NOT NULL,
   users_id INT,
-  FOREIGN KEY (product_id) REFERENCES product(id),
+  date_preparation DATETIME NULL,
+  date_expedition DATETIME NULL,
+  date_transit DATETIME NULL,
+  date_livraison_effective DATETIME NULL;
+  date_preparation_prevue DATETIME NULL
+  date_expedition_prevue DATETIME NULL,
+  date_transit_prevue DATETIME NULL;
+  FOREIGN KEY (categories_id) REFERENCES categories(id),
+  FOREIGN KEY (supplier_id) REFERENCES supplier(id),
   FOREIGN KEY (users_id) REFERENCES users(id)
 );
 

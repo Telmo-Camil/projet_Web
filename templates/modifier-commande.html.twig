@@ -1,42 +1,85 @@
- {% extends 'base.html.twig' %}
- 
-{% block header %}
+{% extends 'base.html.twig' %}
 
+{% block header %}
 <header>
     <div class="container">
-      <h1>Modifier une commande</h1>
+        <h1>Modifier la commande</h1>
+        <p>Modification de la commande #{{ order.id }}</p>
     </div>
     <div class="login-button-container">
         <a href="index.php?uri=order-management" class="login-button">Retour</a>
-        <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
     </div>
-  </header>
-
+</header>
 {% endblock %}
 
- {% block content %}
- 
+{% block content %}
 <main>
-    <h3>Modifier une commande</h3>
-      <form class="crud-form">
-        <label for="num">Numéro de commande :</label>
-        <input type="number" id="num" name="num" required>
+    <div class="container">
+        {% if error_message is defined %}
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
 
-        <label for="catégorie">Catégorie :</label>
-        <input type="text" id="catégorie" name="catégorie" required>
+        <form action="index.php?uri=modify-order&id={{ order.id }}" method="POST" class="order-form">
+            <div class="form-group">
+                <label for="category">Catégorie :</label>
+                <select id="category" name="category_id" required>
+                    <option value="">Sélectionner une catégorie</option>
+                    {% if categories is defined %}
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category.id == order.categories_id %}selected{% endif %}>
+                                {{ category.nom }}
+                            </option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
 
-        <label for="prix">Prix :</label>
-        <input type="number" id="prix" name="prix" required>
+            <div class="form-group">
+                <label for="product_name">Nom du produit :</label>
+                <input type="text" id="product_name" name="product_name" value="{{ order.product_name }}" required>
+            </div>
 
-        <label for="quantite">Quantité :</label>
-        <input type="number" id="quantite" name="quantite" required>
+            <div class="form-group">
+                <label for="supplier">Fournisseur :</label>
+                <select id="supplier" name="supplier_id" required>
+                    <option value="">Sélectionner un fournisseur</option>
+                    {% if suppliers is defined %}
+                        {% for supplier in suppliers %}
+                            <option value="{{ supplier.id }}" {% if supplier.id == order.supplier_id %}selected{% endif %}>
+                                {{ supplier.nom }} - {{ supplier.email }}
+                            </option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
 
-        <label for="fournisseur">Fournisseur :</label>
-        <input type="text" id="fournisseur" name="fournisseur" required>
+            <div class="form-group">
+                <label for="prix">Prix unitaire :</label>
+                <input type="number" id="prix" name="prix" step="0.01" value="{{ order.prix }}" required>
+            </div>
 
-        <button type="submit">Modifier la commande</button>
-      </form>
-  </main>
- {% endblock %}
+            <div class="form-group">
+                <label for="quantite">Quantité :</label>
+                <input type="number" id="quantite" name="quantite" value="{{ order.quantite }}" required>
+            </div>
 
- 
+            <div class="form-group">
+                <label for="date_livraison">Date de livraison :</label>
+                <input type="date" id="date_livraison" name="date_livraison" value="{{ order.date_livraison }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>Statut :</label>
+                <p class="status-badge status-en-attente">En attente</p>
+                <!-- Le statut est en lecture seule -->
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Enregistrer les modifications</button>
+                <a href="index.php?uri=order-management" class="btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}
+

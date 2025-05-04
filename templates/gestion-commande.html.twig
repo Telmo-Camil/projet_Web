@@ -1,105 +1,124 @@
 {% extends 'base.html.twig' %}
- 
- 
-  {% block header %}
 
+{% block header %}
 <header>
     <div class="container">
-     <h1>Gestion des commandes de réapprovisionnement</h1>
-      <p>Gérez vos commandes ici</p>
+        <h1>Gestion des commandes de réapprovisionnement</h1>
+        <p>Gérez vos commandes ici</p>
     </div>
     <div class="login-button-container">
         <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
     </div>
-  </header>
-
+</header>
 {% endblock %}
- 
- 
- {% block content %}
- 
-  <main>
-  <section class="search-section">
-            <form action="index.php" method="GET">
-                <input type="hidden" name="uri" value="gestion-produit">
-                <label for="search">Rechercher une commande :</label>
-                <input type="text" id="search" name="search" placeholder="Recherche une commande...">
-                <button type="submit" class="searchBtn">
-                    🔍 Rechercher
-                </button>
-            </form>
-        </section>
-    <!-- Barre de filtres -->
-<div id="filterBar" class="filterBar">
-  <select id="categoryFilter" class="categoryFilter">
-    <option value="all">Toutes</option>
-    <option value="tech">N° 0001</option>
-    <option value="mode">N° 0002</option>
-    <option value="livres">N° 0003</option>
-  </select> 
 
-  <select id="supplierFilter" class="supplierFilter">
-    <option value="all">Toutes les catégories</option>
-    <option value="amazon">Tech</option>
-    <option value="fnac">Mode</option>
-    <option value="cdiscount">Livres</option>
-  </select>
+{% block content %}
+<main>
+    <section class="search-section">
+        <form action="index.php" method="GET">
+            <input type="hidden" name="uri" value="order-management">
+            <label for="search">Rechercher une commande :</label>
+            <input type="text" id="search" name="search" placeholder="Recherche par produit, fournisseur...">
+            <button type="submit" class="searchBtn">
+                🔍 Rechercher
+            </button>
+        </form>
 
-  <select id="priceFilter" class="priceFilter">
-    <option value="all">Tous les prix</option>
-    <option value="low">Moins de 50€</option>
-    <option value="medium">50€ - 100€</option>
-    <option value="high">Plus de 100€</option>
-  </select>
+        <div id="filterBar" class="filterBar">
+            <select id="statusFilter" class="statusFilter" onchange="filterOrders()">
+                <option value="all">Tous les statuts</option>
+                <option value="en attente">En attente</option>
+                <option value="validée">Validée</option>
+                <option value="livrée">Livrée</option>
+                <option value="annulée">Annulée</option>
+            </select>
 
-  <select id="supplierFilter" class="supplierFilter">
-    <option value="all">Tous les fournisseurs</option>
-    <option value="amazon">Amazon</option>
-    <option value="fnac">Fnac</option>
-    <option value="cdiscount">Cdiscount</option>
-  </select>
+            <select id="categoryFilter" class="categoryFilter" onchange="filterOrders()">
+                <option value="all">Toutes les catégories</option>
+                {% if categories is defined %}
+                    {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.nom }}</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+        </div>
+    </section>
 
-</div>
-</section>
+    <section class="product-section">
+        <div class="container">
+            {% if orders is defined and orders is not empty %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>N° Commande</th>
+                            <th>Produit</th>
+                            <th>Catégorie</th>
+                            <th>Prix</th>
+                            <th>Quantité</th>
+                            <th>Fournisseur</th>
+                            <th>Date livraison</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr>
+                                <td>CMD-{{ order.id }}</td>
+                                <td>{{ order.product_name }}</td>
+                                <td>{{ order.category_name }}</td>
+                                <td>{{ order.prix }} €</td>
+                                <td>{{ order.quantite }}</td>
+                                <td>{{ order.supplier_name }}</td>
+                                <td>{{ order.date_livraison|date('d/m/Y') }}</td>
+                                <td>
+                                    {% set statusClass = order.statut|replace({'_': '-', ' ': '-'}) %}
+                                    <span class="status-badge status-{{ statusClass }}">
+                                        {% set status_labels = {
+                                            'en attente': 'En attente',
+                                            'en_attente': 'En attente',
+                                            'en_preparation': 'En préparation',
+                                            'expediee': 'Expédiée',
+                                            'en_transit': 'En transit',
+                                            'livrée': 'Livrée',
+                                            'annulée': 'Annulée'
+                                        } %}
+                                        {{ status_labels[order.statut] ?? order.statut }}
+                                        <br>
+                                        <small>
+                                            {% if order.statut == 'en_attente' %}
+                                                Préparation prévue : {{ order.date_preparation_prevue|date('d/m/Y') }}
+                                            {% elseif order.statut == 'en_preparation' %}
+                                                Expédition prévue : {{ order.date_expedition_prevue|date('d/m/Y') }}
+                                            {% elseif order.statut == 'expediee' %}
+                                                Transit prévu : {{ order.date_transit_prevue|date('d/m/Y') }}
+                                            {% elseif order.statut == 'en_transit' %}
+                                                Livraison prévue : {{ order.date_livraison|date('d/m/Y') }}
+                                            {% endif %}
+                                        </small>
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if order.statut in ['en attente', 'en_attente', 'en_preparation'] %}
+                                        <a href="index.php?uri=modify-order&id={{ order.id }}" class="btn-edit" title="Modifier">✏️</a>
+                                        <a href="index.php?uri=delete-order&id={{ order.id }}" 
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette commande ?')"
+                                           class="btn-delete" title="Supprimer">🗑️</a>
+                                    {% endif %}
+                                    <a href="index.php?uri=tracking-order&id={{ order.id }}" class="btn-track" title="Suivi">📦</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="no-results">Aucune commande trouvée</p>
+            {% endif %}
+        </div>
+    </section>
 
-  <section class="product-section">
-    <div class="container">
-      <table>
-        <thead>
-          <tr>
-            <th>Numéro de commande</th>
-            <th>Catégorie</th>
-            <th>Prix</th>
-            <th>Quantité</th>
-            <th>Fournisseur</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Commande N° 0001</td>
-            <td>Catégorie 1</td>
-            <td>10 €</td>
-            <td>50</td>
-            <td>fournisseur 1</td>
-            <td><a href="index.php?uri=modify-order">Modifier</a> | <a href="#">Supprimer</a> | <a href="index.php?uri=tracking-order">Suivi</a></td>
-          </tr>
-          <tr>
-            <td>Commande N° 0002</td>
-            <td>Catégorie 2</td>
-            <td>15 €</td>
-            <td>30</td>
-            <td>fournisseur 2</td>
-            <td><a href="index.php?uri=modify-order">Modifier</a> | <a href="#">Supprimer</a> | <a href="index.php?uri=tracking-order">Suivi</a></td>
-          </tr>
-          <!-- Autres produits ici -->
-        </tbody>
-      </table>
-    </div>
-  </section>
     <div class="ajouter">
-        <a href="index.php?uri=add-order" class="login-button">Créer +</a>
+        <a href="index.php?uri=add-order" class="login-button">Nouvelle commande +</a>
     </div>
-  </main>
-
- {% endblock %}
+</main>
+{% endblock %}
