@@ -45,7 +45,7 @@ class ControllerPage
 
     public function entranceManagement()
     {
-        echo $this->twig->render('gestion-entrée.html.twig');
+        echo $this->twig->render('gestion-entree.html.twig');
     }
 
     public function supplierManagement()

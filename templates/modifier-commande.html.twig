@@ -4,7 +4,6 @@
 <header>
     <div class="container">
         <h1>Modifier la commande</h1>
-        <p>Modification de la commande #{{ order.id }}</p>
     </div>
     <div class="login-button-container">
         <a href="index.php?uri=order-management" class="login-button">Retour</a>
@@ -19,43 +18,10 @@
             <div class="error-message">{{ error_message }}</div>
         {% endif %}
 
-        <form action="index.php?uri=modify-order&id={{ order.id }}" method="POST" class="order-form">
-            <div class="form-group">
-                <label for="category">Catégorie :</label>
-                <select id="category" name="category_id" required>
-                    <option value="">Sélectionner une catégorie</option>
-                    {% if categories is defined %}
-                        {% for category in categories %}
-                            <option value="{{ category.id }}" {% if category.id == order.categories_id %}selected{% endif %}>
-                                {{ category.nom }}
-                            </option>
-                        {% endfor %}
-                    {% endif %}
-                </select>
-            </div>
-
+        <form action="index.php?uri=modify-order&id={{ order.id }}" method="POST" class="form-modify">
             <div class="form-group">
                 <label for="product_name">Nom du produit :</label>
                 <input type="text" id="product_name" name="product_name" value="{{ order.product_name }}" required>
-            </div>
-
-            <div class="form-group">
-                <label for="supplier">Fournisseur :</label>
-                <select id="supplier" name="supplier_id" required>
-                    <option value="">Sélectionner un fournisseur</option>
-                    {% if suppliers is defined %}
-                        {% for supplier in suppliers %}
-                            <option value="{{ supplier.id }}" {% if supplier.id == order.supplier_id %}selected{% endif %}>
-                                {{ supplier.nom }} - {{ supplier.email }}
-                            </option>
-                        {% endfor %}
-                    {% endif %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="prix">Prix unitaire :</label>
-                <input type="number" id="prix" name="prix" step="0.01" value="{{ order.prix }}" required>
             </div>
 
             <div class="form-group">
@@ -64,14 +30,27 @@
             </div>
 
             <div class="form-group">
-                <label for="date_livraison">Date de livraison :</label>
-                <input type="date" id="date_livraison" name="date_livraison" value="{{ order.date_livraison }}" required>
+                <label for="prix">Prix unitaire :</label>
+                <input type="number" id="prix" name="prix" step="0.01" value="{{ order.prix }}" required>
             </div>
 
             <div class="form-group">
-                <label>Statut :</label>
-                <p class="status-badge status-en-attente">En attente</p>
-                <!-- Le statut est en lecture seule -->
+                <label for="date_livraison">Date de livraison :</label>
+                <input type="date" id="date_livraison" name="date_livraison" 
+                       value="{{ order.date_livraison }}" 
+                       min="{{ "now"|date('Y-m-d') }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="supplier_id">Fournisseur :</label>
+                <select id="supplier_id" name="supplier_id" required>
+                    {% for supplier in suppliers %}
+                        <option value="{{ supplier.id }}" 
+                                {% if supplier.id == order.supplier_id %}selected{% endif %}>
+                            {{ supplier.nom }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
 
             <div class="form-actions">

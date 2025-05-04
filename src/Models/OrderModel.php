@@ -18,22 +18,22 @@ class OrderModel
         try {
             $this->db->beginTransaction();
 
-            // Calcul des dates prévues
-            $dateLivraison = new \DateTime($data['date_livraison']);
-            $datePreparation = (new \DateTime($data['date_livraison']))->modify('-3 days');
-            $dateExpedition = (new \DateTime($data['date_livraison']))->modify('-2 days');
-            $dateTransit = (new \DateTime($data['date_livraison']))->modify('-1 day');
-
             $query = "INSERT INTO orders (
-                product_name, prix, quantite, categories_id, 
-                supplier_id, date_livraison, users_id,
-                date_preparation_prevue, date_expedition_prevue, 
-                date_transit_prevue
+                product_name, 
+                prix, 
+                quantite, 
+                categories_id, 
+                supplier_id, 
+                date_livraison, 
+                users_id
             ) VALUES (
-                :product_name, :prix, :quantite, :categories_id, 
-                :supplier_id, :date_livraison, :users_id,
-                :date_preparation_prevue, :date_expedition_prevue, 
-                :date_transit_prevue
+                :product_name, 
+                :prix, 
+                :quantite, 
+                :categories_id, 
+                :supplier_id, 
+                :date_livraison, 
+                :users_id
             )";
 
             $stmt = $this->db->prepare($query);
@@ -44,10 +44,7 @@ class OrderModel
                 'categories_id' => $data['category_id'],
                 'supplier_id' => $data['supplier_id'],
                 'date_livraison' => $data['date_livraison'],
-                'users_id' => $_SESSION['user_id'] ?? null,
-                'date_preparation_prevue' => $datePreparation->format('Y-m-d H:i:s'),
-                'date_expedition_prevue' => $dateExpedition->format('Y-m-d H:i:s'),
-                'date_transit_prevue' => $dateTransit->format('Y-m-d H:i:s')
+                'users_id' => $_SESSION['user_id'] ?? null
             ]);
 
             if (!$result) {
@@ -85,49 +82,41 @@ class OrderModel
         return $statusMap[strtolower($status)] ?? 'en_attente';
     }
 
-    public function getOrders($searchTerm = '', $categoryFilter = 'all', $statusFilter = 'all')
+    public function getOrders($search = '')
     {
         try {
-            $query = "SELECT o.*, c.nom as category_name, s.nom as supplier_name 
-                     FROM orders o 
-                     LEFT JOIN categories c ON o.categories_id = c.id 
-                     LEFT JOIN supplier s ON o.supplier_id = s.id 
-                     WHERE 1=1";
-            $params = [];
+            $query = "SELECT 
+                        o.id,
+                        o.product_name,
+                        o.prix,
+                        o.quantite,
+                        o.date_livraison,
+                        o.date_livraison_effective,
+                        s.nom as supplier_name,
+                        c.nom as category_name
+                    FROM orders o
+                    LEFT JOIN supplier s ON o.supplier_id = s.id
+                    LEFT JOIN categories c ON o.categories_id = c.id";
 
-            if (!empty($searchTerm)) {
-                $query .= " AND (o.product_name LIKE :search 
-                          OR s.nom LIKE :search 
-                          OR c.nom LIKE :search)";
-                $params['search'] = "%$searchTerm%";
+            if (!empty($search)) {
+                $query .= " WHERE o.product_name LIKE :search 
+                           OR s.nom LIKE :search 
+                           OR c.nom LIKE :search";
             }
 
-            if ($categoryFilter !== 'all') {
-                $query .= " AND o.categories_id = :category_id";
-                $params['category_id'] = $categoryFilter;
-            }
-
-            if ($statusFilter !== 'all') {
-                $query .= " AND o.statut = :status";
-                $params['status'] = $statusFilter;
-            }
-
-            $query .= " ORDER BY o.date_commande DESC";
+            $query .= " ORDER BY o.date_livraison ASC";
 
             $stmt = $this->db->prepare($query);
-            $stmt->execute($params);
             
-            $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            // Normalisation des statuts
-            foreach ($orders as &$order) {
-                $order['statut'] = $this->normalizeStatus($order['statut']);
+            if (!empty($search)) {
+                $stmt->bindValue(':search', "%$search%", PDO::PARAM_STR);
             }
-            
-            return $orders;
+
+            $stmt->execute();
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            error_log("Erreur dans getOrders(): " . $e->getMessage());
-            throw $e;
+            error_log("Error in getOrders: " . $e->getMessage());
+            throw new \Exception("Erreur lors de la récupération des commandes");
         }
     }
 
@@ -147,29 +136,35 @@ class OrderModel
     public function updateOrder($data)
     {
         try {
+            $this->db->beginTransaction();
+
             $query = "UPDATE orders 
                      SET product_name = :product_name,
-                         categories_id = :category_id,
-                         supplier_id = :supplier_id,
-                         prix = :prix,
                          quantite = :quantite,
+                         prix = :prix,
                          date_livraison = :date_livraison,
-                         statut = :statut
+                         supplier_id = :supplier_id
                      WHERE id = :id";
 
             $stmt = $this->db->prepare($query);
-            return $stmt->execute([
+            $result = $stmt->execute([
                 'id' => $data['id'],
                 'product_name' => $data['product_name'],
-                'category_id' => $data['category_id'],
-                'supplier_id' => $data['supplier_id'],
-                'prix' => $data['prix'],
                 'quantite' => $data['quantite'],
+                'prix' => $data['prix'],
                 'date_livraison' => $data['date_livraison'],
-                'statut' => $data['statut']
+                'supplier_id' => $data['supplier_id']
             ]);
-        } catch (\PDOException $e) {
-            error_log("Erreur dans updateOrder(): " . $e->getMessage());
+
+            if (!$result) {
+                throw new \Exception("Erreur lors de la modification de la commande");
+            }
+
+            $this->db->commit();
+            return true;
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            error_log("Erreur dans updateOrder: " . $e->getMessage());
             throw $e;
         }
     }
@@ -214,67 +209,26 @@ class OrderModel
         }
     }
 
-    public function updateOrderStatus($orderId, $newStatus, $dateField)
+    public function updateOrderStatus($orderId)
     {
         try {
             $this->db->beginTransaction();
 
-            // Met à jour le statut
-            $queryStatus = "UPDATE orders 
-                           SET statut = :status,
-                               {$dateField} = CURRENT_TIMESTAMP
-                           WHERE id = :id";
-            
-            $stmt = $this->db->prepare($queryStatus);
-            $result = $stmt->execute([
-                'status' => $newStatus,
-                'id' => $orderId
-            ]);
+            $order = $this->getOrderById($orderId);
+            $now = new \DateTime();
+            $deliveryDate = new \DateTime($order['date_livraison']);
 
-            // Si la commande est livrée, on ajoute le produit au stock
-            if ($newStatus === 'livrée') {
-                $order = $this->getOrderById($orderId);
+            // If delivery date is today or in the past
+            if ($deliveryDate <= $now) {
+                $query = "UPDATE orders 
+                         SET date_livraison_effective = CURRENT_TIMESTAMP
+                         WHERE id = :id";
                 
-                // Vérifie si le produit existe déjà
-                $queryCheck = "SELECT id, quantite FROM product 
-                             WHERE nom = :nom 
-                             AND categories_id = :categories_id 
-                             AND supplier_id = :supplier_id";
-                
-                $stmt = $this->db->prepare($queryCheck);
-                $stmt->execute([
-                    'nom' => $order['product_name'],
-                    'categories_id' => $order['categories_id'],
-                    'supplier_id' => $order['supplier_id']
-                ]);
-                
-                $existingProduct = $stmt->fetch(PDO::FETCH_ASSOC);
-                
-                if ($existingProduct) {
-                    // Met à jour la quantité si le produit existe
-                    $queryUpdate = "UPDATE product 
-                                  SET quantite = quantite + :quantite 
-                                  WHERE id = :id";
-                    
-                    $stmt = $this->db->prepare($queryUpdate);
-                    $stmt->execute([
-                        'quantite' => $order['quantite'],
-                        'id' => $existingProduct['id']
-                    ]);
-                } else {
-                    // Crée un nouveau produit si n'existe pas
-                    $queryInsert = "INSERT INTO product (nom, prix, quantite, categories_id, supplier_id) 
-                                  VALUES (:nom, :prix, :quantite, :categories_id, :supplier_id)";
-                    
-                    $stmt = $this->db->prepare($queryInsert);
-                    $stmt->execute([
-                        'nom' => $order['product_name'],
-                        'prix' => $order['prix'],
-                        'quantite' => $order['quantite'],
-                        'categories_id' => $order['categories_id'],
-                        'supplier_id' => $order['supplier_id']
-                    ]);
-                }
+                $stmt = $this->db->prepare($query);
+                $stmt->execute(['id' => $orderId]);
+
+                // Add to product stock if delivered
+                $this->addToProductStock($order);
             }
 
             $this->db->commit();
@@ -283,6 +237,61 @@ class OrderModel
             $this->db->rollBack();
             error_log("Erreur dans updateOrderStatus(): " . $e->getMessage());
             throw $e;
+        }
+    }
+
+    private function addToProductStock($order)
+    {
+        // Check if product exists
+        $queryCheck = "SELECT id, quantite FROM product 
+                      WHERE nom = :nom 
+                      AND categories_id = :categories_id 
+                      AND supplier_id = :supplier_id";
+        
+        $stmt = $this->db->prepare($queryCheck);
+        $stmt->execute([
+            'nom' => $order['product_name'],
+            'categories_id' => $order['categories_id'],
+            'supplier_id' => $order['supplier_id']
+        ]);
+        
+        $existingProduct = $stmt->fetch(\PDO::FETCH_ASSOC);
+        
+        if ($existingProduct) {
+            // Update existing product quantity
+            $queryUpdate = "UPDATE product 
+                           SET quantite = quantite + :quantite 
+                           WHERE id = :id";
+            
+            $stmt = $this->db->prepare($queryUpdate);
+            $stmt->execute([
+                'quantite' => $order['quantite'],
+                'id' => $existingProduct['id']
+            ]);
+        } else {
+            // Create new product
+            $queryInsert = "INSERT INTO product (
+                nom, 
+                prix, 
+                quantite, 
+                categories_id, 
+                supplier_id
+            ) VALUES (
+                :nom, 
+                :prix, 
+                :quantite, 
+                :categories_id, 
+                :supplier_id
+            )";
+            
+            $stmt = $this->db->prepare($queryInsert);
+            $stmt->execute([
+                'nom' => $order['product_name'],
+                'prix' => $order['prix'],
+                'quantite' => $order['quantite'],
+                'categories_id' => $order['categories_id'],
+                'supplier_id' => $order['supplier_id']
+            ]);
         }
     }
 

@@ -75,23 +75,20 @@ class OrderController
     public function listOrders()
     {
         try {
-            // Mise à jour automatique des statuts
-            $this->orderModel->checkAndUpdateOrdersStatus();
-
             $searchTerm = $_GET['search'] ?? '';
-            $categoryFilter = $_GET['category'] ?? 'all';
-            $statusFilter = $_GET['status'] ?? 'all';
-
-            $orders = $this->orderModel->getOrders($searchTerm, $categoryFilter, $statusFilter);
+            $orders = $this->orderModel->getOrders($searchTerm);
             $categories = $this->categoryModel->getAllCategories();
 
             echo $this->twig->render('gestion-commande.html.twig', [
                 'orders' => $orders,
                 'categories' => $categories,
-                'currentDate' => date('Y-m-d')
+                'success_message' => $_SESSION['success'] ?? null,
+                'error_message' => $_SESSION['error'] ?? null
             ]);
+            
+            unset($_SESSION['success'], $_SESSION['error']);
         } catch (\Exception $e) {
-            error_log("Erreur dans OrderController->listOrders(): " . $e->getMessage());
+            error_log("Erreur dans listOrders: " . $e->getMessage());
             echo $this->twig->render('gestion-commande.html.twig', [
                 'error_message' => "Une erreur est survenue lors du chargement des commandes"
             ]);
@@ -101,55 +98,43 @@ class OrderController
     public function modifyOrder()
     {
         try {
-            $orderId = $_GET['id'] ?? null;
-            if (!$orderId) {
-                throw new \Exception("ID de commande manquant");
-            }
-
-            // Vérifier si la commande existe et est en attente
-            $order = $this->orderModel->getOrderById($orderId);
-            if (!$order) {
-                throw new \Exception("Commande non trouvée");
-            }
-
-            if ($order['statut'] !== 'en attente') {
-                throw new \Exception("Seules les commandes en attente peuvent être modifiées");
-            }
-
+            $id = $_GET['id'] ?? null;
+            
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $data = [
-                    'id' => $orderId,
-                    'product_name' => $_POST['product_name'] ?? '',
-                    'category_id' => $_POST['category_id'] ?? '',
-                    'supplier_id' => $_POST['supplier_id'] ?? '',
-                    'prix' => $_POST['prix'] ?? '',
-                    'quantite' => $_POST['quantite'] ?? '',
-                    'date_livraison' => $_POST['date_livraison'] ?? '',
-                    'statut' => 'en attente' // Force le statut à rester en attente
-                ];
-
-                if (empty($data['product_name']) || empty($data['category_id']) || 
-                    empty($data['supplier_id']) || empty($data['prix']) || 
-                    empty($data['quantite']) || empty($data['date_livraison'])) {
-                    throw new \Exception("Tous les champs sont obligatoires");
+                // Vérifier si la commande n'est pas déjà livrée
+                $order = $this->orderModel->getOrderById($id);
+                $deliveryDate = new \DateTime($order['date_livraison']);
+                $now = new \DateTime();
+                
+                if ($deliveryDate <= $now) {
+                    throw new \Exception("Impossible de modifier une commande déjà livrée");
                 }
 
+                $data = [
+                    'id' => $id,
+                    'product_name' => $_POST['product_name'],
+                    'quantite' => $_POST['quantite'],
+                    'prix' => $_POST['prix'],
+                    'date_livraison' => $_POST['date_livraison'],
+                    'supplier_id' => $_POST['supplier_id']
+                ];
+
                 $this->orderModel->updateOrder($data);
-                header('Location: index.php?uri=order-management&success=1');
+                $_SESSION['success'] = "Commande modifiée avec succès";
+                header('Location: index.php?uri=order-management');
                 exit;
             }
 
-            $categories = $this->categoryModel->getAllCategories();
+            $order = $this->orderModel->getOrderById($id);
             $suppliers = $this->supplierModel->getAllSuppliers();
 
             echo $this->twig->render('modifier-commande.html.twig', [
                 'order' => $order,
-                'categories' => $categories,
                 'suppliers' => $suppliers
             ]);
         } catch (\Exception $e) {
-            error_log("Erreur dans OrderController->modifyOrder(): " . $e->getMessage());
-            header('Location: index.php?uri=order-management&error=' . urlencode($e->getMessage()));
+            $_SESSION['error'] = $e->getMessage();
+            header('Location: index.php?uri=order-management');
             exit;
         }
     }

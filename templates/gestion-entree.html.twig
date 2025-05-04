@@ -1,10 +1,12 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Gestion des entrées{% endblock %}
+
 {% block header %}
 <header>
     <div class="container">
         <h1>Gestion des entrées</h1>
-        <p>Gérez les entrées de stock</p>
+        <p>Liste des commandes livrées</p>
     </div>
     <div class="login-button-container">
         <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
@@ -16,9 +18,11 @@
 <main>
     <div class="container">
         {% if error_message is defined %}
-            <div class="error-message">
-                {{ error_message }}
-            </div>
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
+
+        {% if success_message is defined %}
+            <div class="success-message">{{ success_message }}</div>
         {% endif %}
 
         <section class="search-section">
@@ -37,11 +41,12 @@
                 <table class="entries-table">
                     <thead>
                         <tr>
-                            <th>Date</th>
+                            <th>Date de livraison</th>
                             <th>Produit</th>
+                            <th>Catégorie</th>
                             <th>Quantité</th>
+                            <th>Prix unitaire</th>
                             <th>Fournisseur</th>
-                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,18 +55,15 @@
                                 <tr>
                                     <td>{{ entry.date }}</td>
                                     <td>{{ entry.product_name }}</td>
+                                    <td>{{ entry.category_name }}</td>
                                     <td>{{ entry.quantity }}</td>
+                                    <td>{{ entry.price|number_format(2, ',', ' ') }} €</td>
                                     <td>{{ entry.supplier_name }}</td>
-                                    <td>
-                                        <a href="index.php?uri=edit-entry&id={{ entry.id }}" class="btn-edit">✏️</a>
-                                        <a href="index.php?uri=delete-entry&id={{ entry.id }}" class="btn-delete" 
-                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')">🗑️</a>
-                                    </td>
                                 </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="5" class="no-results">Aucune entrée disponible</td>
+                                <td colspan="6" class="no-results">Aucune entrée disponible</td>
                             </tr>
                         {% endif %}
                     </tbody>

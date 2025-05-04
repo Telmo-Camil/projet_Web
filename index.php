@@ -146,6 +146,11 @@ switch ($uri) {
     case 'add-category':
         $categoryController->add();
         break;
+
+    case 'gestion-entree':
+        $stockEntryController = new StockEntryController($twig, $db);
+        $stockEntryController->index();
+        break;
 }
 
 
