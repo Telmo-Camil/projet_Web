@@ -1,5 +1,7 @@
- {% extends 'base.html.twig' %}
- 
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier un fournisseur{% endblock %}
+
 {% block header %}
 
 <header>
@@ -14,26 +16,44 @@
 
 {% endblock %}
 
- {% block content %}
- 
+{% block content %}
 <main>
-    <h3>Modifier un fournisseur</h3>
-      <form class="crud-form">
-        <label for="nom-fournisseur">Nom du fournisseur :</label>
-        <input type="text" id="nom-produit" name="nom-produit" required>
+    <div class="container">
+        <h2>Modifier le fournisseur</h2>
 
-        <label for="email">Email :</label>
-        <input type="email" id="email" name="email" required>
+        {% if error_message is defined %}
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
 
-        <label for="telephone">Téléphone :</label>
-        <input type="tel" id="tel" name="tel" pattern="^\+?[0-9\s\-]{7,20}$" required>
+        <form action="index.php?uri=modify-supplier" method="POST" class="form">
+            <input type="hidden" name="id" value="{{ supplier.id }}">
 
-        <label for="ville">Ville :</label>
-        <input type="text" id="ville" name="ville" required>
+            <div class="form-group">
+                <label for="nom">Nom</label>
+                <input type="text" id="nom" name="nom" value="{{ supplier.nom }}" required>
+            </div>
 
-        <button type="submit">Modifier le fournisseur</button>
-      </form>
-  </main>
- {% endblock %}
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="{{ supplier.email }}" required>
+            </div>
 
- 
+            <div class="form-group">
+                <label for="telephone">Téléphone</label>
+                <input type="tel" id="telephone" name="telephone" value="{{ supplier.telephone }}">
+            </div>
+
+            <div class="form-group">
+                <label for="adresse">Adresse</label>
+                <textarea id="adresse" name="adresse">{{ supplier.adresse }}</textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Enregistrer</button>
+                <a href="index.php?uri=supplier-management" class="btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}
+

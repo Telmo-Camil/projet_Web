@@ -78,7 +78,7 @@ switch ($uri) {
 
     case 'supplier-management':
         $supplierController = new SupplierController($twig, $db);
-        $supplierController->listSuppliers();
+        $supplierController->index();
         break;
     
     case 'product-management':
@@ -100,7 +100,13 @@ switch ($uri) {
         break;
 
     case 'modify-supplier':
-        $controller->modifySupplier();
+        $supplierController = new SupplierController($twig, $db);
+        $supplierController->modify();
+        break;
+
+    case 'delete-supplier':
+        $supplierController = new SupplierController($twig, $db);
+        $supplierController->delete();
         break;
 
     case 'modify-product':

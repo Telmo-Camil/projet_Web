@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des fournisseurs{% endblock %}
+
+{% block header %}
+<header>
+    <div class="container">
+        <h1>Gestion des fournisseurs</h1>
+    </div>
+    <div class="login-button-container">
+        <a href="index.php?uri=/" class="login-button">Retour à l'accueil</a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<main>
+    <section class="search-section">
+        <form action="index.php" method="GET">
+            <input type="hidden" name="uri" value="supplier-management">
+            <label for="search">Rechercher un fournisseur :</label>
+            <input type="text" id="search" name="search" placeholder="Recherche par nom, email ou ville...">
+            <button type="submit" class="searchBtn">
+                🔍 Rechercher
+            </button>
+        </form>
+    </section>
+
+    <div class="container">
+        {% if error_message is defined %}
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
+
+        {% if success_message is defined %}
+            <div class="success-message">{{ success_message }}</div>
+        {% endif %}
+
+        <div class="actions-bar">
+            <a href="index.php?uri=add-supplier" class="btn-primary">Ajouter un fournisseur</a>
+        </div>
+
+        {% if suppliers is defined and suppliers|length > 0 %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Adresse</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for supplier in suppliers %}
+                        <tr>
+                            <td>{{ supplier.nom }}</td>
+                            <td>{{ supplier.email }}</td>
+                            <td>{{ supplier.telephone }}</td>
+                            <td>{{ supplier.adresse }}</td>
+                            <td class="actions">
+                                <a href="index.php?uri=modify-supplier&id={{ supplier.id }}" 
+                                   class="btn-edit" title="Modifier">✏️</a>
+                                <a href="#" 
+                                   onclick="confirmDelete({{ supplier.id }})" 
+                                   class="btn-delete" title="Supprimer">🗑️</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-results">Aucun fournisseur trouvé</p>
+        {% endif %}
+    </div>
+</main>
+
+<script>
+function confirmDelete(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur ?')) {
+        window.location.href = 'index.php?uri=delete-supplier&id=' + id;
+    }
+}
+</script>
+{% endblock %}
