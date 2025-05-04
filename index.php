@@ -8,6 +8,7 @@ use App\Controllers\ProductController;
 use App\Controllers\CategoryController;
 use App\Controllers\OrderController;
 use App\Controllers\SupplierController; // Add this line
+use App\Controllers\DashboardController;
 
 // Configuration de la base de données
 $dbConfig = require_once __DIR__ . '/config/database.php';
@@ -62,7 +63,8 @@ switch ($uri) {
         break;
 
     case 'dashboard':
-        $controller->dashboard();
+        $dashboardController = new DashboardController($twig, $db);
+        $dashboardController->index();
         break;
 
     case 'order-management':

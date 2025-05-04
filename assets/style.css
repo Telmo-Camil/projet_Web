@@ -299,6 +299,13 @@ footer {
   font-size: 1rem;
 }
 
+.stat-card small {
+  display: block;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
 .alerts-section {
   margin-top: 40px;
 }
@@ -324,6 +331,35 @@ footer {
   color: #d63031;
 }
 
+.alert-item {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  margin-bottom: 0.5rem;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.alert-item.urgent {
+  background-color: #f8d7da;
+  border-left-color: #dc3545;
+}
+
+.alert-item.info {
+  background-color: #cff4fc;
+  border-left-color: #0dcaf0;
+}
+
+.alert-item span {
+  font-weight: bold;
+}
+
+.alert-item small {
+  display: block;
+  color: #666;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
 .charts-placeholder {
   background-color: var(--card-bg);
   border-radius: var(--border-radius);
@@ -336,6 +372,14 @@ footer {
 .charts-placeholder p {
   font-size: 1rem;
   color: #666;
+}
+
+.charts-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin-top: 2rem;
 }
 
 /* Section tableau de gestion */

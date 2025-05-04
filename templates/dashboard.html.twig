@@ -16,56 +16,135 @@
 
 
  {% block content %}
- 
-  <main class="container">
+<main class="container">
+    {% if error_message is defined %}
+        <div class="error-message">{{ error_message }}</div>
+    {% endif %}
 
     <!-- Statistiques synthétiques -->
     <section class="dashboard-stats">
-      <div class="stat-card">
-        <h2>320</h2>
-        <p>Produits en stock</p>
-      </div>
-      <div class="stat-card">
-        <h2>8</h2>
-        <p>Produits en rupture</p>
-      </div>
-      <div class="stat-card">
-        <h2>124</h2>
-        <p>Ventes ce mois-ci</p>
-      </div>
-      <div class="stat-card">
-        <h2>7</h2>
-        <p>Commandes en attente</p>
-      </div>
+        <div class="stat-card">
+            <h2>{{ totalStock|number_format(0, ',', ' ') }}</h2>
+            <p>Articles en stock</p>
+            <small>Répartis sur {{ nombreProduits }} produits différents</small>
+        </div>
+        <div class="stat-card">
+            <h2>{{ ruptures }}</h2>
+            <p>Produits en rupture</p>
+        </div>
+        <div class="stat-card">
+            <h2>{{ commandesEnCours }}</h2>
+            <p>Commandes en cours</p>
+        </div>
     </section>
 
-    <!-- Alertes de rupture -->
+    <!-- Alertes de stock -->
     <section class="alerts-section">
-      <h2>⚠️ Alertes - Produits en rupture</h2>
-      <div class="alert-list">
-        <div class="alert-item">
-          <span>Produit A</span> est en rupture de stock.
+        <h2>⚠️ Alertes - Stock critique</h2>
+        <div class="alert-list">
+            {% if produitsAlerte is empty %}
+                <div class="alert-item info">
+                    Aucun produit en alerte de stock
+                </div>
+            {% else %}
+                {% for produit in produitsAlerte %}
+                    <div class="alert-item {% if produit.quantite == 0 %}urgent{% endif %}">
+                        <span>{{ produit.nom }}</span>
+                        {% if produit.quantite == 0 %}
+                            est en rupture de stock
+                        {% else %}
+                            ne dispose plus que de {{ produit.quantite }} unité(s)
+                        {% endif %}
+                        <small>(Catégorie : {{ produit.category_name }})</small>
+                    </div>
+                {% endfor %}
+            {% endif %}
         </div>
-        <div class="alert-item">
-          <span>Produit B</span> est en dessous du seuil critique.
-        </div>
-        <div class="alert-item">
-          <span>Produit C</span> n’a pas été approvisionné depuis 30 jours.
-        </div>
-      </div>
     </section>
 
-    <!-- Graphique de ventes -->
-    <section class="charts-placeholder">
-      <h2>📊 Statistiques des ventes</h2>
-      <canvas id="salesChart" width="800" height="400"></canvas>
+    <!-- Graphique des commandes -->
+    <section class="charts-section">
+        <h2>📊 Statistiques des commandes</h2>
+        <canvas id="salesChart" 
+                width="800" 
+                height="400"
+                data-stats="{{ statsCommandes|json_encode|raw }}">
+        </canvas>
     </section>
+</main>
+{% endblock %}
 
-  </main>
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        const chartCanvas = document.getElementById('salesChart');
+        console.log('Canvas element:', chartCanvas); // Debug
 
- {% endblock %}
+        const statsData = {{ statsCommandes|json_encode|raw }};
+        console.log('Stats data:', statsData); // Debug
 
- {% block script %}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="static/script/dashboard.js"></script>
+        if (!chartCanvas) {
+            console.error('Canvas element not found');
+            return;
+        }
+
+        const ctx = chartCanvas.getContext('2d');
+        
+        if (!statsData || statsData.length === 0) {
+            console.warn('No data available for chart');
+            return;
+        }
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: statsData.map(item => {
+                    const date = new Date(item.mois + '-01');
+                    return date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+                }),
+                datasets: [{
+                    label: 'Nombre de commandes',
+                    data: statsData.map(item => Number(item.nombre_commandes)),
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Évolution des commandes sur 6 mois',
+                        padding: 20,
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+        console.log('Chart created successfully'); // Debug
+    } catch (error) {
+        console.error('Error creating chart:', error);
+    }
+});
+</script>
 {% endblock %}
