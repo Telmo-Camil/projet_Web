@@ -27,9 +27,11 @@
 
         <section class="search-section">
             <form action="index.php" method="GET">
-                <input type="hidden" name="uri" value="gestion-entrée">
+                <input type="hidden" name="uri" value="gestion-entree">
                 <label for="search">Rechercher une entrée :</label>
-                <input type="text" id="search" name="search" placeholder="Rechercher par produit ou date...">
+                <input type="text" id="search" name="search" 
+                       value="{{ search }}" 
+                       placeholder="Rechercher par produit, date...">
                 <button type="submit" class="searchBtn">
                     🔍 Rechercher
                 </button>
@@ -47,6 +49,8 @@
                             <th>Quantité</th>
                             <th>Prix unitaire</th>
                             <th>Fournisseur</th>
+                            <th>Total</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -57,23 +61,34 @@
                                     <td>{{ entry.product_name }}</td>
                                     <td>{{ entry.category_name }}</td>
                                     <td>{{ entry.quantity }}</td>
-                                    <td>{{ entry.price|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ entry.price_formatted }} €</td>
                                     <td>{{ entry.supplier_name }}</td>
+                                    <td>{{ entry.total_formatted }} €</td>
+                                    <td>
+                                        <a href="#" 
+                                           onclick="confirmDelete({{ entry.id }})" 
+                                           class="btn-delete" 
+                                           title="Supprimer">🗑️</a>
+                                    </td>
                                 </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="6" class="no-results">Aucune entrée disponible</td>
+                                <td colspan="8" class="no-results">Aucune entrée disponible</td>
                             </tr>
                         {% endif %}
                     </tbody>
                 </table>
             </div>
         </section>
-        
-        <div class="ajouter">
-            <a href="index.php?uri=add-entry" class="login-button">Ajouter une entrée</a>
-        </div>
     </div>
 </main>
+
+<script>
+function confirmDelete(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')) {
+        window.location.href = 'index.php?uri=delete-entry&id=' + id;
+    }
+}
+</script>
 {% endblock %}

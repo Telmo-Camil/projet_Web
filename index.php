@@ -63,7 +63,7 @@ switch ($uri) {
         break;
 
     case 'dashboard':
-        $dashboardController = new DashboardController($twig, $db);
+        $dashboardController = new App\Controllers\DashboardController($twig, $db);
         $dashboardController->index();
         break;
 
@@ -148,8 +148,18 @@ switch ($uri) {
         break;
 
     case 'gestion-entree':
-        $stockEntryController = new StockEntryController($twig, $db);
+        $stockEntryController = new App\Controllers\StockEntryController($twig, $db);
         $stockEntryController->index();
+        break;
+
+    case 'delete-entry':
+        $stockEntryController = new App\Controllers\StockEntryController($twig, $db);
+        $stockEntryController->deleteEntry();
+        break;
+
+    case 'get-chart-data':
+        $dashboardController = new App\Controllers\DashboardController($twig, $db);
+        $dashboardController->getChartData();
         break;
 }
 
