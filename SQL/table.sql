@@ -87,3 +87,16 @@ CREATE TABLE action_history (
   date_action DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (users_id) REFERENCES users(id)
 );
+
+CREATE TABLE reports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    date_start DATE NOT NULL,
+    date_end DATE NOT NULL,
+    categories VARCHAR(255),
+    format VARCHAR(10) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

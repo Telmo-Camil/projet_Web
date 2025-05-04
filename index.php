@@ -176,6 +176,36 @@ switch ($uri) {
         $historiqueController = new App\Controllers\HistoriqueController($twig, $db);
         $historiqueController->index();
         break;
+
+    case 'rapport':
+        $reportController = new App\Controllers\ReportGeneratorController($twig, $db);
+        $reportController->index();
+        break;
+
+    case 'get-chart-data':
+        $rapportController = new App\Controllers\RapportController($twig, $db);
+        $rapportController->getChartData();
+        break;
+
+    case 'preview-report':
+        $rapportController = new App\Controllers\RapportController($twig, $db);
+        $rapportController->previewReport();
+        break;
+
+    case 'generate-report':
+        $reportGenerator = new App\Controllers\ReportGeneratorController($twig, $db);
+        $reportGenerator->generateReport();
+        break;
+
+    case 'download-report':
+        $reportGenerator = new App\Controllers\ReportGeneratorController($twig, $db);
+        $reportGenerator->downloadReport($_GET['id']);
+        break;
+
+    case 'delete-report':
+        $reportGenerator = new App\Controllers\ReportGeneratorController($twig, $db);
+        $reportGenerator->deleteReport($_GET['id']);
+        break;
 }
 
 

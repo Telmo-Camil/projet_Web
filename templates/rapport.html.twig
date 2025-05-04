@@ -1,0 +1,163 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rapports de Stock{% endblock %}
+
+{% block header %}
+<header>
+    <div class="container">
+        <h1>Génération de Rapports</h1>
+        <p>Analyses et prévisions des stocks</p>
+    </div>
+    <div class="login-button-container">
+        <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container">
+        <!-- Formulaire de génération de rapport -->
+        <section class="form-standard">
+            <h2>Générer un rapport</h2>
+            <form action="index.php?uri=generate-report" method="POST" class="crud-form">
+                <div class="form-group">
+                    <label for="report_type">Type de rapport :</label>
+                    <select name="report_type" id="report_type" class="form-control" required>
+                        <option value="stock_movements">Mouvements de stock</option>
+                        <option value="purchase_forecast">Prévisions d'achats</option>
+                        <option value="stock_alerts">Alertes de stock</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="date_start">Période du :</label>
+                    <input type="date" id="date_start" name="date_start" class="form-control" 
+                           value="{{ 'now'|date_modify('-30 days')|date('Y-m-d') }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="date_end">Au :</label>
+                    <input type="date" id="date_end" name="date_end" class="form-control" 
+                           value="{{ 'now'|date('Y-m-d') }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="categories">Catégories :</label>
+                    <select name="categories[]" id="categories" class="form-control" multiple>
+                        <option value="all" selected>Toutes les catégories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="format">Format du rapport :</label>
+                    <select name="format" id="format" class="form-control" required>
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="html">HTML</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Générer le rapport</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Aperçu des données -->
+        <section class="preview-section">
+            <h2>Aperçu des données</h2>
+            
+            <!-- Statistiques rapides -->
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <h3>Mouvements récents</h3>
+                    <p class="stat-value">{{ stats.recent_movements }}</p>
+                    <p class="stat-label">derniers 30 jours</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Produits à commander</h3>
+                    <p class="stat-value">{{ stats.products_to_order }}</p>
+                    <p class="stat-label">sous le seuil d'alerte</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Tendance du stock</h3>
+                    <p class="stat-value">{{ stats.stock_trend }}</p>
+                    <p class="stat-label">évolution mensuelle</p>
+                </div>
+            </div>
+
+            <!-- Graphique dynamique -->
+            <div class="chart-wrapper">
+                <canvas id="previewChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Rapports récents -->
+        <section class="recent-reports">
+            <h2>Rapports générés</h2>
+            <div class="table-responsive">
+                <table class="entries-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Période</th>
+                            <th>Format</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if reports is defined and reports is not empty %}
+                            {% for report in reports %}
+                                <tr>
+                                    <td>{{ report.created_at|date('d/m/Y H:i') }}</td>
+                                    <td>{{ report.type_label }}</td>
+                                    <td>{{ report.date_start|date('d/m/Y') }} - {{ report.date_end|date('d/m/Y') }}</td>
+                                    <td>{{ report.format|upper }}</td>
+                                    <td class="actions">
+                                        <a href="index.php?uri=download-report&id={{ report.id }}" 
+                                           class="btn-action" title="Télécharger">
+                                            📥
+                                        </a>
+                                        <a href="index.php?uri=edit-report&id={{ report.id }}" 
+                                           class="btn-action" title="Modifier">
+                                            ✏️
+                                        </a>
+                                        <a href="#" 
+                                           onclick="confirmDelete({{ report.id }})" 
+                                           class="btn-action" title="Supprimer">
+                                            🗑️
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="no-results">Aucun rapport généré</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <script>
+        function confirmDelete(id) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce rapport ?')) {
+                window.location.href = `index.php?uri=delete-report&id=${id}`;
+            }
+        }
+        </script>
+    </div>
+</main>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="assets/js/rapport.js"></script>
+{% endblock %}
