@@ -161,6 +161,21 @@ switch ($uri) {
         $dashboardController = new App\Controllers\DashboardController($twig, $db);
         $dashboardController->getChartData();
         break;
+
+    case 'gestion-sortie':
+        $sortiController = new App\Controllers\StockSortieController($twig, $db);
+        $sortiController->index();
+        break;
+
+    case 'add-sortie':
+        $sortiController = new App\Controllers\StockSortieController($twig, $db);
+        $sortiController->addSortie();
+        break;
+
+    case 'historique':
+        $historiqueController = new App\Controllers\HistoriqueController($twig, $db);
+        $historiqueController->index();
+        break;
 }
 
 

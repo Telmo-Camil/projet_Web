@@ -1123,3 +1123,34 @@ table tr:hover {
     border-radius: var(--border-radius);
 }
 
+/* Styles pour l'historique des transactions */
+.transaction-entree {
+    background-color: #f0fff4;
+}
+
+.transaction-sortie {
+    background-color: #fff5f5;
+}
+
+.status-badge.status-entree {
+    background-color: #48bb78;
+    color: white;
+}
+
+.status-badge.status-sortie {
+    background-color: #f56565;
+    color: white;
+}
+
+.search-bar .form-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-bar input[type="date"] {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+

@@ -1,0 +1,103 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Sorties{% endblock %}
+
+{% block header %}
+<header>
+    <div class="container">
+        <h1>Gestion des Sorties de Stock</h1>
+        <p>Enregistrez les sorties de produits</p>
+    </div>
+    <div class="login-button-container">
+        <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container">
+        {% if error_message is defined %}
+            <div class="error-message">{{ error_message }}</div>
+        {% endif %}
+        {% if success_message is defined %}
+            <div class="success-message">{{ success_message }}</div>
+        {% endif %}
+
+        <section class="form-standard">
+            <h2>Nouvelle Sortie</h2>
+            <form action="index.php?uri=add-sortie" method="POST" class="crud-form">
+                <div class="form-group">
+                    <label for="product_id">Produit :</label>
+                    <select name="product_id" id="product_id" class="form-control" required>
+                        <option value="">Sélectionnez un produit</option>
+                        {% for product in products %}
+                            <option value="{{ product.id }}" data-stock="{{ product.quantite }}">
+                                {{ product.nom }} (Stock: {{ product.quantite }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <small class="stock-info"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="quantity">Quantité :</label>
+                    <input type="number" id="quantity" name="quantity" class="form-control" min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reason">Raison :</label>
+                    <select name="reason" id="reason" class="form-control" required>
+                        <option value="vente">Vente</option>
+                        <option value="utilisation">Utilisation interne</option>
+                        <option value="perte">Perte/Casse</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Enregistrer la sortie</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="product-section">
+            <h2>Historique des Sorties</h2>
+            <div class="table-responsive">
+                <table class="entries-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Produit</th>
+                            <th>Quantité</th>
+                            <th>Raison</th>
+                            <th>Stock restant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if sorties is defined and sorties is not empty %}
+                            {% for sortie in sorties %}
+                                <tr>
+                                    <td>{{ sortie.date|date('d/m/Y H:i') }}</td>
+                                    <td>{{ sortie.product_name }}</td>
+                                    <td>{{ sortie.quantity }}</td>
+                                    <td>{{ sortie.reason }}</td>
+                                    <td>{{ sortie.remaining_stock }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="no-results">Aucune sortie enregistrée</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="assets/js/sorties.js"></script>
+{% endblock %}

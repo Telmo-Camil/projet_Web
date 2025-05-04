@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique des Transactions{% endblock %}
+
+{% block header %}
+<header>
+    <div class="container">
+        <h1>Historique des Transactions</h1>
+        <p>Suivi des entrées et sorties de stock</p>
+    </div>
+    <div class="login-button-container">
+        <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container">
+        <section class="search-section">
+            <form action="index.php" method="GET" class="search-bar">
+                <input type="hidden" name="uri" value="historique">
+                <div class="form-group">
+                    <label for="dateStart">Du :</label>
+                    <input type="date" id="dateStart" name="dateStart" value="{{ dateStart }}">
+                    
+                    <label for="dateEnd">Au :</label>
+                    <input type="date" id="dateEnd" name="dateEnd" value="{{ dateEnd }}">
+                </div>
+
+                <div class="filterBar">
+                    <select name="type" id="typeFilter" class="categoryFilter">
+                        <option value="all">Tous les types</option>
+                        <option value="entree" {% if type == 'entree' %}selected{% endif %}>Entrées</option>
+                        <option value="sortie" {% if type == 'sortie' %}selected{% endif %}>Sorties</option>
+                    </select>
+
+                    <select name="category" id="categoryFilter" class="categoryFilter">
+                        <option value="all">Toutes les catégories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if selectedCategory == category.id %}selected{% endif %}>
+                                {{ category.nom }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" class="searchBtn">
+                    🔍 Filtrer
+                </button>
+            </form>
+        </section>
+
+        <section class="product-section">
+            <div class="table-responsive">
+                <table class="entries-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Produit</th>
+                            <th>Catégorie</th>
+                            <th>Quantité</th>
+                            <th>Raison</th>
+                            <th>Stock après</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if transactions is defined and transactions is not empty %}
+                            {% for transaction in transactions %}
+                                <tr class="transaction-{{ transaction.type }}">
+                                    <td>{{ transaction.date|date('d/m/Y H:i') }}</td>
+                                    <td>
+                                        <span class="status-badge status-{{ transaction.type }}">
+                                            {{ transaction.type == 'entree' ? 'Entrée' : 'Sortie' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transaction.product_name }}</td>
+                                    <td>{{ transaction.category_name }}</td>
+                                    <td>{{ transaction.quantity }}</td>
+                                    <td>{{ transaction.reason }}</td>
+                                    <td>{{ transaction.stock_after }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="no-results">Aucune transaction trouvée</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock %}

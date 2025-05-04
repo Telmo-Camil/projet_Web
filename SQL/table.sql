@@ -46,15 +46,14 @@ CREATE TABLE stock_entries (
   FOREIGN KEY (users_id) REFERENCES users(id)
 );
 
-CREATE TABLE out_stock (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  product_id INT,
-  quantite INT,
-  date_out DATETIME DEFAULT CURRENT_TIMESTAMP,
-  users_id INT,
-  motif VARCHAR(255),
-  FOREIGN KEY (product_id) REFERENCES product(id),
-  FOREIGN KEY (users_id) REFERENCES users(id)
+CREATE TABLE IF NOT EXISTS stock_sorties (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    reason ENUM('vente', 'utilisation', 'perte') NOT NULL,
+    date DATETIME NOT NULL,
+    remaining_stock INT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES product(id)
 );
 
 CREATE TABLE orders (
