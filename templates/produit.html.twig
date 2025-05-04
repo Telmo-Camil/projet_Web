@@ -1,4 +1,4 @@
- {% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
  
 {% block header %}
 
@@ -8,7 +8,7 @@
       <p>Gérez vos produits ici</p>
     </div>
     <div class="login-button-container">
-        <a href="index.php?uri=product-management" class="login-button">Retour</a>
+        <a href="index.php?uri=gestion-produit" class="login-button">Retour</a>
         <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
     </div>
   </header>
@@ -17,65 +17,58 @@
 
 
  {% block content %}
- 
+<main>
+    {% if error_message is defined and error_message is not empty %}
+        <div class="error-message">
+            <p>{{ error_message }}</p>
+        </div>
+    {% endif %}
 
-    <main>
+    <div class="container">
         <section class="search-section">
-          <label for="search">Rechercher un produit :</label>
-          <input type="text" id="search" name="search" placeholder="Recherche par nom ou catégorie...">
-          <button id="searchBtn" class="searchBtn">
-              🔍 Rechercher
-          </button>
-          <!-- Barre de filtres -->
-      <div id="filterBar" class="filterBar">
-        <select id="categoryFilter" class="categoryFilter">
-          <option value="all">Toutes les catégories</option>
-          <option value="tech">Tech</option>
-          <option value="mode">Mode</option>
-          <option value="livres">Livres</option>
-        </select>
-      
-        <select id="priceFilter" class="priceFilter">
-          <option value="all">Tous les prix</option>
-          <option value="low">Moins de 50€</option>
-          <option value="medium">50€ - 100€</option>
-          <option value="high">Plus de 100€</option>
-        </select>
-      
-        <select id="supplierFilter" class="supplierFilter">
-          <option value="all">Tous les fournisseurs</option>
-          <option value="amazon">Amazon</option>
-          <option value="fnac">Fnac</option>
-          <option value="cdiscount">Cdiscount</option>
-        </select>
-      
-        <select id="supplierFilter" class="supplierFilter">
-          <option value="all">Tous</option>
-          <option value="stock">En stock</option>
-          <option value="rupture">En rupture</option>
-        </select>
-      </div>
-      </section>
+            <div class="search-bar">
+                <label for="search">Rechercher un produit :</label>
+                <input type="text" id="search" name="search" placeholder="Recherche par nom ou catégorie...">
+                <button id="searchBtn" class="searchBtn">
+                    🔍 Rechercher
+                </button>
+            </div>
+            
+            <div class="filterBar">
+                <select id="categoryFilter" name="category" class="categoryFilter" onchange="filterByCategory(this.value)">
+                    <option value="all">Toutes les catégories</option>
+                    {% if categories is defined %}
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" 
+                                {% if selectedCategory == category.id %}selected{% endif %}>
+                                {{ category.nom }}
+                            </option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+        </section>
 
-      <nav class="nav-section">
-        <div class="container nav-grid">
-          {% for product in products %}
-            <a href="index.php?uri=info-produit&id={{ product.id }}">
-                <img src="{{ product.image_url }}" alt="{{ product.name }}">
-                <h4>{{ product.name }}</h4>
-                <p>Catégorie : {{ product.category }}</p>
-                <p>Prix : {{ product.price }} €</p>
-                <p class="stock">En stock : {{ product.stock_quantity }}</p>
-                <p>Fournisseur : {{ product.supplier_name }}</p>
-            </a>
-        {% endfor %}
+        <div class="nav-grid">
+            {% if products is defined and products is not empty %}
+                {% for product in products %}
+                    <div class="product-card">
+                        <h4>{{ product.product_name }}</h4>
+                        <p>Catégorie : {{ product.category_name }}</p>
+                        <p>Prix : {{ product.prix }} €</p>
+                        <p class="stock">En stock : {{ product.quantite }}</p>
+                        <p>Fournisseur : {{ product.supplier_name }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-results">Aucun produit disponible pour le moment.</p>
+            {% endif %}
         </div>
-      </nav>
-      <div class="ajouter">
-    <a href="index.php?uri=add-supplier" class="login-button">Ajouter</a>
-        </div>
-        <!-- Ajoute d'autres produits ici -->
-      </main>
- {% endblock %}
 
- 
+        <div class="ajouter">
+            <a href="index.php?uri=add-product" class="login-button">Ajouter un produit</a>
+        </div>
+    </div>
+</main>
+{% endblock %}
+

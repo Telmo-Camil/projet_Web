@@ -16,7 +16,12 @@ class ProductModel
     public function getAllProducts()
     {
         try {
-            $query = "SELECT * FROM product";
+            $query = "SELECT *, product.nom as product_name, categories.nom as category_name,
+            supplier.nom AS supplier_name
+            FROM product 
+            JOIN categories ON product.categories_id = categories.id
+            JOIN supplier on product.supplier_id = supplier.id
+            ";
             $stmt = $this->db->prepare($query);
             $stmt->execute();
             
@@ -90,5 +95,26 @@ class ProductModel
         $stmt = $this->db->prepare($query);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getProductsByCategory($categoryId)
+    {
+        try {
+            $query = "SELECT p.*, 
+                         p.nom as product_name,
+                         c.nom as category_name,
+                         s.nom as supplier_name
+                      FROM product p
+                      LEFT JOIN categories c ON p.categories_id = c.id
+                      LEFT JOIN supplier s ON p.supplier_id = s.id
+                      WHERE p.categories_id = :category_id";
+                      
+            $stmt = $this->db->prepare($query);
+            $stmt->execute(['category_id' => $categoryId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Erreur dans getProductsByCategory: " . $e->getMessage());
+            throw $e;
+        }
     }
 }

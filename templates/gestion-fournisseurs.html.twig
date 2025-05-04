@@ -20,11 +20,15 @@
  
   <main>
   <section class="search-section">
-    <label for="search">Rechercher un fournisseur :</label>
-    <input type="text" id="search" name="search" placeholder="Recherche par nom ou ville...">
-    <button id="searchBtn" class="searchBtn">
-        🔍 Rechercher
-    </button>
+            <form action="index.php" method="GET">
+                <input type="hidden" name="uri" value="gestion-produit">
+                <label for="search">Rechercher un fournisseur :</label>
+                <input type="text" id="search" name="search" placeholder="Recherche un fournisseur...">
+                <button type="submit" class="searchBtn">
+                    🔍 Rechercher
+                </button>
+            </form>
+        </section>
      <!-- Barre de filtres -->
 <div id="filterBar" class="filterBar">
   <select id="categoryFilter" class="categoryFilter">

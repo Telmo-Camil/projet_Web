@@ -20,11 +20,15 @@
  
   <main>
   <section class="search-section">
-    <label for="search">Rechercher une commande :</label>
-    <input type="text" id="search" name="search" placeholder="Recherche par Numéro...">
-    <button id="searchBtn" class="searchBtn">
-        🔍 Rechercher
-    </button>
+            <form action="index.php" method="GET">
+                <input type="hidden" name="uri" value="gestion-produit">
+                <label for="search">Rechercher une commande :</label>
+                <input type="text" id="search" name="search" placeholder="Recherche une commande...">
+                <button type="submit" class="searchBtn">
+                    🔍 Rechercher
+                </button>
+            </form>
+        </section>
     <!-- Barre de filtres -->
 <div id="filterBar" class="filterBar">
   <select id="categoryFilter" class="categoryFilter">
@@ -32,7 +36,7 @@
     <option value="tech">N° 0001</option>
     <option value="mode">N° 0002</option>
     <option value="livres">N° 0003</option>
-  </select>
+  </select> 
 
   <select id="supplierFilter" class="supplierFilter">
     <option value="all">Toutes les catégories</option>

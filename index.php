@@ -5,6 +5,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use Twig\Loader\FilesystemLoader;
 use Twig\Environment;
 use App\Controllers\ProductController;
+use App\Controllers\CategoryController;
 
 // Configuration de la base de données
 $dbConfig = require_once __DIR__ . '/config/database.php';
@@ -27,6 +28,7 @@ $twig = new Environment($loader, [
     'cache' => false,
     'debug' => true
 ]);
+$twig->addExtension(new \Twig\Extension\DebugExtension());
 
 // Récupération de l'URI
 $uri = $_GET['uri'] ?? '/';
@@ -35,6 +37,7 @@ $action = $_GET['action'] ?? 'index';
 // Instanciation des contrôleurs
 $controller = new \App\Controllers\ControllerPage($twig);
 $productController = new ProductController($twig, $db);
+$categoryController = new \App\Controllers\CategoryController($twig, $db);
 
 // Routage
 switch ($uri) {
@@ -104,6 +107,14 @@ switch ($uri) {
 
     case 'tracking-order':
         $controller->orderTracking();
+        break;
+
+    case 'gestion-produit':
+        $categoryController->index();
+        break;
+
+    case 'add-category':
+        $categoryController->add();
         break;
 }
 

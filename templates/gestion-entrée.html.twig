@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block header %}
+<header>
+    <div class="container">
+        <h1>Gestion des entrées</h1>
+        <p>Gérez les entrées de stock</p>
+    </div>
+    <div class="login-button-container">
+        <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
+    </div>
+</header>
+{% endblock %}
+
+{% block content %}
+<main>
+    <div class="container">
+        {% if error_message is defined %}
+            <div class="error-message">
+                {{ error_message }}
+            </div>
+        {% endif %}
+
+        <section class="search-section">
+            <form action="index.php" method="GET">
+                <input type="hidden" name="uri" value="gestion-entrée">
+                <label for="search">Rechercher une entrée :</label>
+                <input type="text" id="search" name="search" placeholder="Rechercher par produit ou date...">
+                <button type="submit" class="searchBtn">
+                    🔍 Rechercher
+                </button>
+            </form>
+        </section>
+
+        <section class="entries-section">
+            <div class="table-responsive">
+                <table class="entries-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Produit</th>
+                            <th>Quantité</th>
+                            <th>Fournisseur</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if entries is defined and entries is not empty %}
+                            {% for entry in entries %}
+                                <tr>
+                                    <td>{{ entry.date }}</td>
+                                    <td>{{ entry.product_name }}</td>
+                                    <td>{{ entry.quantity }}</td>
+                                    <td>{{ entry.supplier_name }}</td>
+                                    <td>
+                                        <a href="index.php?uri=edit-entry&id={{ entry.id }}" class="btn-edit">✏️</a>
+                                        <a href="index.php?uri=delete-entry&id={{ entry.id }}" class="btn-delete" 
+                                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette entrée ?')">🗑️</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="no-results">Aucune entrée disponible</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <div class="ajouter">
+            <a href="index.php?uri=add-entry" class="login-button">Ajouter une entrée</a>
+        </div>
+    </div>
+</main>
+{% endblock %}

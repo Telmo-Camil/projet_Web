@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\ProductModel;
+use App\Models\CategoryModel;
 use Twig\Environment;
 use PDO;
 
@@ -10,31 +11,39 @@ class ProductController
 {
     private $twig;
     private $productModel;
+    private $categoryModel;
 
     public function __construct(Environment $twig, PDO $db)
     {
         $this->twig = $twig;
         $this->productModel = new ProductModel($db);
+        $this->categoryModel = new CategoryModel($db);
     }
 
     public function index()
     {
         try {
-            // Debug: Vérifier la connexion
-            error_log("Tentative de récupération des produits...");
+            // Récupérer le filtre de catégorie
+            $categoryId = $_GET['category'] ?? 'all';
             
-            $products = $this->productModel->getAllProducts();
+            // Récupérer les produits filtrés
+            $products = ($categoryId === 'all') 
+                ? $this->productModel->getAllProducts()
+                : $this->productModel->getProductsByCategory($categoryId);
             
-            // Debug: Afficher les produits récupérés
-            error_log("Produits trouvés : " . print_r($products, true));
-
+            // Récupérer toutes les catégories pour le filtre
+            $categories = $this->categoryModel->getAllCategories();
+            
             echo $this->twig->render('produit.html.twig', [
-                'products' => $products
+                'products' => $products,
+                'categories' => $categories,
+                'selectedCategory' => $categoryId,
+                'debug' => true // Pour le débogage
             ]);
         } catch (\Exception $e) {
-            error_log("Erreur dans ProductController: " . $e->getMessage());
+            error_log("Erreur: " . $e->getMessage());
             echo $this->twig->render('produit.html.twig', [
-                'error_message' => "Erreur lors du chargement des produits: " . $e->getMessage()
+                'error_message' => "Une erreur est survenue lors du chargement des produits"
             ]);
         }
     }

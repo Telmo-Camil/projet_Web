@@ -1,42 +1,57 @@
 {% extends 'base.html.twig' %}
 
-
 {% block header %}
-
 <header>
     <div class="container">
-      <h1>Gestion des produits</h1>
-      <p>Gérez vos produits ici</p>
+        <h1>Gestion des catégories</h1>
+        <p>Gérez vos catégories de produits</p>
     </div>
     <div class="login-button-container">
         <a href="index.php?uri=/" class="login-button">Revenir à l'accueil</a>
     </div>
-  </header>
-
+</header>
 {% endblock %}
 
 {% block content %}
- 
 <main>
-        <section class="search-section">
-          <label for="search">Rechercher une catégorie :</label>
-          <input type="text" id="search" name="search" placeholder="Recherche une catégorie...">
-          <button id="searchBtn" class="searchBtn">
-              🔍 Rechercher
-          </button>
-        </section>
-      <nav class="nav-section">
-        <div class="container nav-grid">
-          <a href="index.php?uri=product">Produits de jardin</a>
-          <a href="index.php?uri=product">Bricolage</a>
-          <a href="index.php?uri=product">Salon</a>
-          <a href="index.php?uri=product">Chambre</a>
-          <a href="index.php?uri=product">Cuisine</a>
-          <a href="index.php?uri=product">Salle de bain</a>
-          <a href="index.php?uri=product">produit menager</a>
-        </div>
-      </nav>
-        <!-- Ajoute d'autres produits ici -->
-      </main>
+    <div class="container">
+        {% if error_message is defined %}
+            <div class="error-message">
+                {{ error_message }}
+            </div>
+        {% endif %}
 
- {% endblock %}
+        <section class="search-section">
+            <form action="index.php" method="GET">
+                <input type="hidden" name="uri" value="gestion-produit">
+                <label for="search">Rechercher une catégorie :</label>
+                <input type="text" id="search" name="search" placeholder="Recherche une catégorie...">
+                <button type="submit" class="searchBtn">
+                    🔍 Rechercher
+                </button>
+            </form>
+        </section>
+
+        <section class="categories-section">
+            <div class="nav-grid">
+                {% if categories is defined and categories is not empty %}
+                    {% for category in categories %}
+                        <div class="category-card">
+                            <a href="index.php?uri=product&category={{ category.id }}">
+                                <h3>{{ category.nom }}</h3>
+                                <p class="product-count">{{ category.product_count ?? 0 }} produits</p>
+                            </a>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-results">Aucune catégorie disponible</p>
+                {% endif %}
+            </div>
+        </section>
+        
+        <div class="ajouter">
+            <a href="index.php?uri=add-category" class="login-button">Ajouter une catégorie</a>
+        </div>
+    </div>
+</main>
+{% endblock %}

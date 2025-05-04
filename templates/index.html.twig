@@ -1,44 +1,44 @@
- {% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
  
 {% block header %}
-
-<header>
-      <div>
+<header class="main-header">
+    <div class="header-content">
         <a href="index.php?uri=/" class="title">Gestion de Stock</a> 
         <p>Suivi, organisation et contrôle simplifiés de vos produits</p>
-      </div>
-      <div class="login-button-container">
+    </div>
+    <div class="login-button-container">
         <a href="index.php?uri=login" class="login-button">Se connecter</a>
         <a href="index.php?uri=sign" class="login-button">S'inscrire</a>
-      </div>
-  </header>
-
+    </div>
+</header>
 {% endblock %}
 
- {% block content %}
- 
- <main>
-<section class="search-section">
-    <div class="container">
-      <label for="search">🔍 Recherche d'article</label>
-      <input type="text" id="search" placeholder="Nom du produit, catégorie, fournisseur..." />
-    </div>
-  </section>
+{% block content %}
+<main class="main-content">
+    <section class="search-section">
+            <form action="index.php" method="GET">
+                <input type="hidden" name="uri" value="gestion-produit">
+                <label for="search">Rechercher :</label>
+                <input type="text" id="search" name="search" placeholder="Recherche un produit, une catégorie, un fournisseur...">
+                <button type="submit" class="searchBtn">
+                    🔍 Rechercher
+                </button>
+            </form>
+        </section>
 
-  <nav class="nav-section">
-    <div class="container nav-grid">
-      <a href="index.php?uri=dashboard">📊 Tableau de bord</a>
-      <a href="index.php?uri=product-management">🧴 Produits</a>
-      <a href="index.php?uri=supplier-management">🚚 Fournisseurs</a>
-      <a href="index.php?uri=order-management">📦 Commandes</a>
-      <a href="index.php?uri=entrance-management">🏷️ Gestion des entrées</a>
-      <a href="#">📜 Historique</a>
-      <a href="#">📝 Rapports</a>
-    </div>
-  </nav>
+    <nav class="nav-section">
+        <div class="nav-grid">
+            <a href="index.php?uri=dashboard" class="nav-item">📊 Tableau de bord</a>
+            <a href="index.php?uri=gestion-produit" class="nav-item">🧴 Produits</a>
+            <a href="index.php?uri=supplier-management" class="nav-item">🚚 Fournisseurs</a>
+            <a href="index.php?uri=order-management" class="nav-item">📦 Commandes</a>
+            <a href="index.php?uri=entrance-management" class="nav-item">🏷️ Gestion des entrées</a>
+            <a href="#" class="nav-item">📜 Historique</a>
+            <a href="#" class="nav-item">📝 Rapports</a>
+        </div>
+    </nav>
 </main>
- {% endblock %}
+{% endblock %}
 
- 
 
- 
+
