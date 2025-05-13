@@ -30,6 +30,7 @@ try {
 
 // Create services
 $permissionService = new PermissionService($db);
+$role = $_SESSION['user']['role'] ?? 'guest';
 
 // Configuration de Twig
 $loader = new FilesystemLoader(__DIR__ . '/templates');
@@ -50,6 +51,11 @@ $twig->addGlobal('app', [
 $twig->addGlobal('session', [
     'user' => $_SESSION['user'] ?? null
 ]);
+
+// Dans la configuration de Twig:
+$twig->addFunction(new \Twig\TwigFunction('hasPermission', function($role, $feature) use ($permissionService) {
+    return $permissionService->checkPermission($role, $feature);
+}));
 
 // Récupération de l'URI
 $uri = $_GET['uri'] ?? '/';
@@ -181,7 +187,8 @@ switch ($uri) {
         break;
 
     case 'gestion-produit':
-        $categoryController->index();
+        $permissionService->checkPermission($role, 'F3');
+        $productController->index();
         break;
 
     case 'add-category':
@@ -189,6 +196,7 @@ switch ($uri) {
         break;
 
     case 'gestion-entree':
+        $permissionService->checkPermission($role, 'F5');
         $stockEntryController->index();
         break;
 
@@ -202,6 +210,7 @@ switch ($uri) {
         break;
 
     case 'gestion-sortie':
+        $permissionService->checkPermission($role, 'F6');
         $sortiController = new App\Controllers\StockSortieController($twig, $db);
         $sortiController->index();
         break;
@@ -212,11 +221,11 @@ switch ($uri) {
         break;
 
     case 'historique':
-        $historiqueController = new App\Controllers\HistoriqueController($twig, $db);
-        $historiqueController->index();
+        $stockEntryController->showHistory();
         break;
 
     case 'rapport':
+        $permissionService->checkPermission($role, 'F12');
         $reportController = new App\Controllers\ReportGeneratorController($twig, $db);
         $reportController->index();
         break;

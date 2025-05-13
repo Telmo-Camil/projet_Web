@@ -12,12 +12,11 @@
 {% endblock %}
 
 {% block content %}
-<main>
-    <div class="error-container">
-        <div class="error-message">
-            <h2>🚨 Une erreur est survenue</h2>
-            <p>{{ message }}</p>
-        </div>
+<div class="error-container">
+    <div class="error-message">
+        <h2>Accès refusé</h2>
+        <p>Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
+        <a href="index.php" class="btn-primary">Retour à l'accueil</a>
     </div>
-</main>
+</div>
 {% endblock %}

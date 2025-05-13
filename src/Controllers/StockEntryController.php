@@ -5,171 +5,61 @@ namespace App\Controllers;
 use PDO;
 use Twig\Environment;
 use App\Services\PermissionService;
+use App\Models\TransactionModel;
 
 class StockEntryController
 {
-    private $db;
     private $twig;
     private $permissionService;
+    private $transactionModel;
 
     public function __construct(Environment $twig, PDO $db, PermissionService $permissionService)
     {
         $this->twig = $twig;
-        $this->db = $db;
         $this->permissionService = $permissionService;
+        $this->transactionModel = new TransactionModel($db);
     }
 
     public function index()
     {
         try {
-            // Récupérer les paramètres de filtrage
             $search = $_GET['search'] ?? '';
             $dateDebut = $_GET['date_debut'] ?? '';
             $dateFin = $_GET['date_fin'] ?? '';
             $supplier = $_GET['supplier'] ?? '';
             $category = $_GET['category'] ?? '';
 
-            // Récupérer toutes les commandes livrées avec toutes les informations nécessaires
-            $query = "SELECT 
-                    o.id,
-                    o.date_livraison,
-                    o.product_name,
-                    o.quantite,
-                    o.prix,
-                    o.supplier_id,
-                    o.categories_id,
-                    o.stock_updated,
-                    s.nom as supplier_name,
-                    c.nom as category_name
-                FROM orders o
-                LEFT JOIN supplier s ON o.supplier_id = s.id
-                LEFT JOIN categories c ON o.categories_id = c.id
-                WHERE o.date_livraison <= CURRENT_DATE";
+            // Passer les paramètres de filtrage
+            $entries = $this->transactionModel->getDeliveredOrders(
+                $search,
+                $dateDebut,
+                $dateFin,
+                $supplier,
+                $category
+            );
 
-            // Ajouter les conditions de filtrage
-            $params = [];
-            if ($search) {
-                $query .= " AND (o.product_name LIKE :search OR s.nom LIKE :search)";
-                $params['search'] = "%$search%";
-            }
-            if ($dateDebut) {
-                $query .= " AND o.date_livraison >= :date_debut";
-                $params['date_debut'] = $dateDebut;
-            }
-            if ($dateFin) {
-                $query .= " AND o.date_livraison <= :date_fin";
-                $params['date_fin'] = $dateFin;
-            }
-            if ($supplier) {
-                $query .= " AND s.id = :supplier";
-                $params['supplier'] = $supplier;
-            }
-            if ($category) {
-                $query .= " AND c.id = :category";
-                $params['category'] = $category;
+            // Ajouter du débogage
+            error_log("Nombre d'entrées trouvées : " . count($entries));
+            if (count($entries) === 0) {
+                error_log("Aucune entrée trouvée avec les paramètres : " . 
+                    "search=$search, dateDebut=$dateDebut, dateFin=$dateFin, " .
+                    "supplier=$supplier, category=$category");
             }
 
-            $query .= " ORDER BY o.date_livraison DESC";
-
-            $stmt = $this->db->prepare($query);
-            $stmt->execute($params);
-            $entries = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            // Pour chaque commande livrée, mettre à jour le stock
             foreach ($entries as $entry) {
-                if (!$entry['stock_updated']) {
-                    try {
-                        $this->db->beginTransaction();
-                        
-                        // Vérifier si le produit existe
-                        $checkProduct = "SELECT id, quantite FROM product 
-                                       WHERE nom = :nom 
-                                       AND categories_id = :categories_id 
-                                       AND supplier_id = :supplier_id";
-                        
-                        $stmtCheck = $this->db->prepare($checkProduct);
-                        $stmtCheck->execute([
-                            'nom' => $entry['product_name'],
-                            'categories_id' => $entry['categories_id'],
-                            'supplier_id' => $entry['supplier_id']
-                        ]);
-                        
-                        $existingProduct = $stmtCheck->fetch(\PDO::FETCH_ASSOC);
-                        
-                        if ($existingProduct) {
-                            // Mettre à jour le produit existant
-                            $updateProduct = "UPDATE product 
-                                            SET quantite = quantite + :quantite,
-                                                prix = :prix
-                                            WHERE id = :id";
-                            
-                            $stmtUpdate = $this->db->prepare($updateProduct);
-                            $stmtUpdate->execute([
-                                'quantite' => $entry['quantite'],
-                                'prix' => $entry['prix'],
-                                'id' => $existingProduct['id']
-                            ]);
-                        } else {
-                            // Créer un nouveau produit
-                            $insertProduct = "INSERT INTO product (
-                                nom, 
-                                prix, 
-                                quantite, 
-                                categories_id, 
-                                supplier_id
-                            ) VALUES (
-                                :nom,
-                                :prix,
-                                :quantite,
-                                :categories_id,
-                                :supplier_id
-                            )";
-                            
-                            $stmtInsert = $this->db->prepare($insertProduct);
-                            $stmtInsert->execute([
-                                'nom' => $entry['product_name'],
-                                'prix' => $entry['prix'],
-                                'quantite' => $entry['quantite'],
-                                'categories_id' => $entry['categories_id'],
-                                'supplier_id' => $entry['supplier_id']
-                            ]);
-                        }
-
-                        // Marquer la commande comme traitée
-                        $updateOrder = "UPDATE orders SET stock_updated = 1 WHERE id = :id";
-                        $stmtOrder = $this->db->prepare($updateOrder);
-                        $stmtOrder->execute(['id' => $entry['id']]);
-
-                        $this->db->commit();
-                    } catch (\Exception $e) {
-                        $this->db->rollBack();
-                        error_log("Erreur lors de la mise à jour du stock: " . $e->getMessage());
-                    }
+                try {
+                    $this->transactionModel->updateProductStock($entry);
+                } catch (\Exception $e) {
+                    error_log("Erreur mise à jour stock: " . $e->getMessage());
                 }
             }
 
-            // Formater les données
-            $formattedEntries = array_map(function($entry) {
-                return [
-                    'id' => $entry['id'],
-                    'date' => (new \DateTime($entry['date_livraison']))->format('d/m/Y'),
-                    'product_name' => $entry['product_name'],
-                    'category_name' => $entry['category_name'],
-                    'quantity' => $entry['quantite'],
-                    'price_formatted' => number_format($entry['prix'], 2, ',', ' '),
-                    'supplier_name' => $entry['supplier_name'],
-                    'total_formatted' => number_format($entry['prix'] * $entry['quantite'], 2, ',', ' ')
-                ];
-            }, $entries);
-
-            // Récupérer la liste des fournisseurs et catégories pour les filtres
-            $suppliers = $this->db->query("SELECT id, nom FROM supplier ORDER BY nom")->fetchAll(\PDO::FETCH_ASSOC);
-            $categories = $this->db->query("SELECT id, nom FROM categories ORDER BY nom")->fetchAll(\PDO::FETCH_ASSOC);
+            $formattedEntries = array_map([$this, 'formatEntry'], $entries);
 
             echo $this->twig->render('gestion-entree.html.twig', [
                 'entries' => $formattedEntries,
-                'suppliers' => $suppliers,
-                'categories' => $categories,
+                'suppliers' => $this->transactionModel->getSuppliers(),
+                'categories' => $this->transactionModel->getCategories(),
                 'search' => $search,
                 'date_debut' => $dateDebut,
                 'date_fin' => $dateFin,
@@ -177,13 +67,27 @@ class StockEntryController
                 'selected_category' => $category,
                 'current_page' => 'gestion-entree'
             ]);
-
         } catch (\Exception $e) {
+            error_log("Erreur dans index : " . $e->getMessage());
             echo $this->twig->render('gestion-entree.html.twig', [
                 'error' => $e->getMessage(),
                 'current_page' => 'gestion-entree'
             ]);
         }
+    }
+
+    private function formatEntry($entry)
+    {
+        return [
+            'id' => $entry['id'],
+            'date' => (new \DateTime($entry['date_livraison']))->format('d/m/Y'),
+            'product_name' => $entry['product_name'],
+            'category_name' => $entry['category_name'],
+            'quantity' => $entry['quantite'],
+            'price_formatted' => number_format($entry['prix'], 2, ',', ' '),
+            'supplier_name' => $entry['supplier_name'],
+            'total_formatted' => number_format($entry['prix'] * $entry['quantite'], 2, ',', ' ')
+        ];
     }
 
     public function deleteEntry()
@@ -199,11 +103,9 @@ class StockEntryController
                 throw new \Exception("ID de l'entrée manquant");
             }
 
-            $query = "DELETE FROM orders WHERE id = :id AND DATE(date_livraison) <= CURDATE()";
-            $stmt = $this->db->prepare($query);
-            $result = $stmt->execute(['id' => $id]);
+            $result = $this->transactionModel->deleteEntry($id);
 
-            if ($result && $stmt->rowCount() > 0) {
+            if ($result) {
                 $_SESSION['success'] = "Entrée supprimée avec succès";
             } else {
                 $_SESSION['error'] = "Impossible de supprimer cette entrée";
@@ -218,173 +120,66 @@ class StockEntryController
         exit;
     }
 
-    private function addToProductStock($entry)
+    public function showHistory()
     {
         try {
-            $this->db->beginTransaction();
+            $dateStart = $_GET['dateStart'] ?? date('Y-m-d', strtotime('-1 month'));
+            $dateEnd = $_GET['dateEnd'] ?? date('Y-m-d');
+            $type = $_GET['type'] ?? 'all';
+            $selectedCategory = $_GET['category'] ?? 'all';
 
-            // Check if product exists
-            $query = "SELECT id, quantite FROM product 
-                     WHERE nom = :nom 
-                     AND categories_id = :categories_id 
-                     AND supplier_id = :supplier_id";
+            $transactions = [];
             
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([
-                'nom' => $entry['product_name'],
-                'categories_id' => $entry['categories_id'],
-                'supplier_id' => $entry['supplier_id']
-            ]);
+            // Debug des paramètres
+            error_log("Paramètres de recherche : dateStart=$dateStart, dateEnd=$dateEnd, type=$type, category=$selectedCategory");
             
-            $existingProduct = $stmt->fetch(\PDO::FETCH_ASSOC);
+            if ($type === 'all' || $type === 'entree') {
+                $entries = $this->transactionModel->getEntries(
+                    $dateStart, 
+                    $dateEnd, 
+                    $selectedCategory !== 'all' ? $selectedCategory : null
+                );
+                error_log("Nombre d'entrées trouvées : " . count($entries));
+                $transactions = array_merge($transactions, $entries);
+            }
             
-            if ($existingProduct) {
-                // Update existing product quantity
-                $query = "UPDATE product 
-                         SET quantite = quantite + :quantite 
-                         WHERE id = :id";
-                
-                $stmt = $this->db->prepare($query);
-                $stmt->execute([
-                    'quantite' => $entry['quantity'],
-                    'id' => $existingProduct['id']
-                ]);
-            } else {
-                // Create new product
-                $query = "INSERT INTO product (
-                    nom, 
-                    prix, 
-                    quantite, 
-                    categories_id, 
-                    supplier_id
-                ) VALUES (
-                    :nom, 
-                    :prix, 
-                    :quantite, 
-                    :categories_id, 
-                    :supplier_id
-                )";
-                
-                $stmt = $this->db->prepare($query);
-                $stmt->execute([
-                    'nom' => $entry['product_name'],
-                    'prix' => $entry['price'],
-                    'quantite' => $entry['quantity'],
-                    'categories_id' => $entry['categories_id'],
-                    'supplier_id' => $entry['supplier_id']
-                ]);
+            if ($type === 'all' || $type === 'sortie') {
+                $sorties = $this->transactionModel->getSorties(
+                    $dateStart, 
+                    $dateEnd, 
+                    $selectedCategory !== 'all' ? $selectedCategory : null
+                );
+                error_log("Nombre de sorties trouvées : " . count($sorties));
+                $transactions = array_merge($transactions, $sorties);
             }
 
-            $this->db->commit();
-            return true;
-        } catch (\Exception $e) {
-            $this->db->rollBack();
-            error_log("Error adding to stock: " . $e->getMessage());
-            throw $e;
-        }
-    }
+            // Debug du nombre total de transactions
+            error_log("Nombre total de transactions : " . count($transactions));
 
-    private function updateStockFromDelivery($order)
-    {
-        try {
-            $this->db->beginTransaction();
+            // Trier les transactions par date
+            usort($transactions, function($a, $b) {
+                return strtotime($b['date']) - strtotime($a['date']);
+            });
 
-            // Vérifier si le produit existe déjà
-            $query = "SELECT id, quantite FROM product 
-                     WHERE nom = :nom 
-                     AND categories_id = :categories_id 
-                     AND supplier_id = :supplier_id";
-            
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([
-                'nom' => $order['product_name'],
-                'categories_id' => $order['categories_id'],
-                'supplier_id' => $order['supplier_id']
-            ]);
-            
-            $existingProduct = $stmt->fetch(\PDO::FETCH_ASSOC);
-            
-            if ($existingProduct) {
-                // Mettre à jour la quantité du produit existant
-                $updateQuery = "UPDATE product 
-                              SET quantite = quantite + :quantite,
-                                  prix = :prix
-                              WHERE id = :id";
-                
-                $stmt = $this->db->prepare($updateQuery);
-                $stmt->execute([
-                    'quantite' => $order['quantite'],
-                    'prix' => $order['prix'],
-                    'id' => $existingProduct['id']
-                ]);
+            $categories = $this->transactionModel->getCategories();
 
-                $productId = $existingProduct['id'];
-                $newStock = $existingProduct['quantite'] + $order['quantite'];
-            } else {
-                // Créer un nouveau produit
-                $insertQuery = "INSERT INTO product (
-                    nom, 
-                    prix, 
-                    quantite, 
-                    categories_id, 
-                    supplier_id
-                ) VALUES (
-                    :nom, 
-                    :prix, 
-                    :quantite, 
-                    :categories_id, 
-                    :supplier_id
-                )";
-                
-                $stmt = $this->db->prepare($insertQuery);
-                $stmt->execute([
-                    'nom' => $order['product_name'],
-                    'prix' => $order['prix'],
-                    'quantite' => $order['quantite'],
-                    'categories_id' => $order['categories_id'],
-                    'supplier_id' => $order['supplier_id']
-                ]);
-
-                $productId = $this->db->lastInsertId();
-                $newStock = $order['quantite'];
-            }
-
-            // Ajouter l'entrée dans l'historique des mouvements
-            $stockMovementQuery = "INSERT INTO stock_movements (
-                product_id,
-                type,
-                quantity,
-                date,
-                reason,
-                stock_after
-            ) VALUES (
-                :product_id,
-                'entree',
-                :quantity,
-                NOW(),
-                :reason,
-                :stock_after
-            )";
-
-            $stmt = $this->db->prepare($stockMovementQuery);
-            $stmt->execute([
-                'product_id' => $productId,
-                'quantity' => $order['quantite'],
-                'reason' => 'Livraison commande #' . $order['id'],
-                'stock_after' => $newStock
+            echo $this->twig->render('historique.html.twig', [
+                'transactions' => $transactions,
+                'categories' => $categories,
+                'dateStart' => $dateStart,
+                'dateEnd' => $dateEnd,
+                'type' => $type,
+                'selectedCategory' => $selectedCategory,
+                'current_page' => 'historique',
+                'debug' => true // Ajouter le mode debug pour afficher plus d'informations
             ]);
 
-            // Marquer la commande comme traitée
-            $updateOrderQuery = "UPDATE orders SET stock_updated = 1 WHERE id = :id";
-            $stmt = $this->db->prepare($updateOrderQuery);
-            $stmt->execute(['id' => $order['id']]);
-
-            $this->db->commit();
-            return true;
         } catch (\Exception $e) {
-            $this->db->rollBack();
-            error_log("Erreur mise à jour stock: " . $e->getMessage());
-            throw $e;
+            error_log("Erreur complète dans showHistory : " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            echo $this->twig->render('historique.html.twig', [
+                'error' => $e->getMessage(),
+                'current_page' => 'historique'
+            ]);
         }
     }
 }
