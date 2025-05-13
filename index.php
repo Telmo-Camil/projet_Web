@@ -8,8 +8,10 @@ use Twig\Environment;
 use App\Controllers\ProductController;
 use App\Controllers\CategoryController;
 use App\Controllers\OrderController;
-use App\Controllers\SupplierController; // Add this line
+use App\Controllers\SupplierController;
 use App\Controllers\DashboardController;
+use App\Controllers\StockEntryController; // Add this line
+use App\Services\PermissionService;
 
 // Configuration de la base de données
 $dbConfig = require_once __DIR__ . '/config/database.php';
@@ -25,6 +27,9 @@ try {
 } catch (PDOException $e) {
     die('Erreur de connexion : ' . $e->getMessage());
 }
+
+// Create services
+$permissionService = new PermissionService($db);
 
 // Configuration de Twig
 $loader = new FilesystemLoader(__DIR__ . '/templates');
@@ -54,6 +59,9 @@ $action = $_GET['action'] ?? 'index';
 $controller = new \App\Controllers\ControllerPage($twig, $db);
 $productController = new ProductController($twig, $db);
 $categoryController = new \App\Controllers\CategoryController($twig, $db);
+
+// Create controller
+$stockEntryController = new StockEntryController($twig, $db, $permissionService);
 
 // Routage
 switch ($uri) {
@@ -86,7 +94,7 @@ switch ($uri) {
         break;
 
     case 'entrance-management':
-        $controller->entranceManagement();
+        $stockEntryController->index();  // Utiliser stockEntryController au lieu de controller
         break;
 
     case 'supplier-management':
@@ -181,12 +189,10 @@ switch ($uri) {
         break;
 
     case 'gestion-entree':
-        $stockEntryController = new App\Controllers\StockEntryController($twig, $db);
         $stockEntryController->index();
         break;
 
     case 'delete-entry':
-        $stockEntryController = new App\Controllers\StockEntryController($twig, $db);
         $stockEntryController->deleteEntry();
         break;
 

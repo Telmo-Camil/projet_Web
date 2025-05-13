@@ -4,16 +4,19 @@ namespace App\Controllers;
 
 use PDO;
 use Twig\Environment;
+use App\Services\PermissionService;
 
 class StockEntryController
 {
     private $db;
     private $twig;
+    private $permissionService;
 
-    public function __construct(Environment $twig, PDO $db)
+    public function __construct(Environment $twig, PDO $db, PermissionService $permissionService)
     {
         $this->twig = $twig;
         $this->db = $db;
+        $this->permissionService = $permissionService;
     }
 
     public function index()
@@ -26,56 +29,10 @@ class StockEntryController
             $supplier = $_GET['supplier'] ?? '';
             $category = $_GET['category'] ?? '';
 
-            // Base de la requête
-            $queryPending = "SELECT 
+            // Récupérer toutes les commandes livrées (date de livraison <= aujourd'hui)
+            $query = "SELECT 
                     o.id,
                     o.date_livraison,
-                    o.product_name,
-                    o.quantite,
-                    o.prix,
-                    s.nom as supplier_name,
-                    c.nom as category_name,
-                    o.stock_added
-                FROM orders o
-                LEFT JOIN supplier s ON o.supplier_id = s.id
-                LEFT JOIN categories c ON o.categories_id = c.id
-                WHERE o.date_livraison <= CURRENT_DATE 
-                AND (o.stock_added = 0 OR o.stock_added IS NULL)";
-
-            // Ajouter les conditions de filtrage
-            $params = [];
-            if ($search) {
-                $queryPending .= " AND (o.product_name LIKE :search OR s.nom LIKE :search)";
-                $params['search'] = "%$search%";
-            }
-            if ($dateDebut) {
-                $queryPending .= " AND o.date_livraison >= :date_debut";
-                $params['date_debut'] = $dateDebut;
-            }
-            if ($dateFin) {
-                $queryPending .= " AND o.date_livraison <= :date_fin";
-                $params['date_fin'] = $dateFin;
-            }
-            if ($supplier) {
-                $queryPending .= " AND s.id = :supplier";
-                $params['supplier'] = $supplier;
-            }
-            if ($category) {
-                $queryPending .= " AND c.id = :category";
-                $params['category'] = $category;
-            }
-
-            $queryPending .= " ORDER BY o.date_livraison DESC";
-
-            // Préparer et exécuter la requête
-            $stmt = $this->db->prepare($queryPending);
-            $stmt->execute($params);
-            $pendingEntries = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            // Récupérer l'historique des entrées validées
-            $queryHistory = "SELECT 
-                    o.id,
-                    o.date_livraison as date_entree,
                     o.product_name,
                     o.quantite,
                     o.prix,
@@ -84,67 +41,57 @@ class StockEntryController
                 FROM orders o
                 LEFT JOIN supplier s ON o.supplier_id = s.id
                 LEFT JOIN categories c ON o.categories_id = c.id
-                WHERE o.date_livraison <= CURRENT_DATE 
-                AND o.stock_added = 1";  // Pour ne récupérer que les entrées validées
+                WHERE o.date_livraison <= CURRENT_DATE";
 
             // Ajouter les conditions de filtrage
+            $params = [];
             if ($search) {
-                $queryHistory .= " AND (o.product_name LIKE :search OR s.nom LIKE :search)";
+                $query .= " AND (o.product_name LIKE :search OR s.nom LIKE :search)";
+                $params['search'] = "%$search%";
             }
             if ($dateDebut) {
-                $queryHistory .= " AND o.date_livraison >= :date_debut";
+                $query .= " AND o.date_livraison >= :date_debut";
+                $params['date_debut'] = $dateDebut;
             }
             if ($dateFin) {
-                $queryHistory .= " AND o.date_livraison <= :date_fin";
+                $query .= " AND o.date_livraison <= :date_fin";
+                $params['date_fin'] = $dateFin;
             }
             if ($supplier) {
-                $queryHistory .= " AND s.id = :supplier";
+                $query .= " AND s.id = :supplier";
+                $params['supplier'] = $supplier;
             }
             if ($category) {
-                $queryHistory .= " AND c.id = :category";
+                $query .= " AND c.id = :category";
+                $params['category'] = $category;
             }
 
-            $queryHistory .= " ORDER BY o.date_livraison DESC";
+            $query .= " ORDER BY o.date_livraison DESC";
 
-            $stmtHistory = $this->db->prepare($queryHistory);
-            $stmtHistory->execute($params);
-            $entries = $stmtHistory->fetchAll(\PDO::FETCH_ASSOC);
+            $stmt = $this->db->prepare($query);
+            $stmt->execute($params);
+            $entries = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            // Formater les données
+            $formattedEntries = array_map(function($entry) {
+                return [
+                    'id' => $entry['id'],
+                    'date' => (new \DateTime($entry['date_livraison']))->format('d/m/Y'),
+                    'product_name' => $entry['product_name'],
+                    'category_name' => $entry['category_name'],
+                    'quantity' => $entry['quantite'],
+                    'price_formatted' => number_format($entry['prix'], 2, ',', ' '),
+                    'supplier_name' => $entry['supplier_name'],
+                    'total_formatted' => number_format($entry['prix'] * $entry['quantite'], 2, ',', ' ')
+                ];
+            }, $entries);
 
             // Récupérer la liste des fournisseurs et catégories pour les filtres
             $suppliers = $this->db->query("SELECT id, nom FROM supplier ORDER BY nom")->fetchAll(\PDO::FETCH_ASSOC);
             $categories = $this->db->query("SELECT id, nom FROM categories ORDER BY nom")->fetchAll(\PDO::FETCH_ASSOC);
 
-            // Formater les données pour l'affichage
-            $formattedPending = array_map(function($entry) {
-                return [
-                    'id' => $entry['id'],
-                    'date' => (new \DateTime($entry['date_livraison']))->format('d/m/Y'),
-                    'product_name' => $entry['product_name'],
-                    'supplier_name' => $entry['supplier_name'],
-                    'category_name' => $entry['category_name'],
-                    'quantity' => $entry['quantite'],
-                    'price' => number_format($entry['prix'], 2, ',', ' '),
-                    'total' => number_format($entry['prix'] * $entry['quantite'], 2, ',', ' ')
-                ];
-            }, $pendingEntries);
-
-            $formattedHistory = array_map(function($entry) {
-                return [
-                    'id' => $entry['id'],
-                    'date' => (new \DateTime($entry['date_entree']))->format('d/m/Y'),
-                    'product_name' => $entry['product_name'],
-                    'supplier_name' => $entry['supplier_name'],
-                    'category_name' => $entry['category_name'],
-                    'quantity' => $entry['quantite'],
-                    'price_formatted' => number_format($entry['prix'], 2, ',', ' '),
-                    'total_formatted' => number_format($entry['prix'] * $entry['quantite'], 2, ',', ' ')
-                ];
-            }, $entries);
-
             echo $this->twig->render('gestion-entree.html.twig', [
-                'current_page' => 'entrance-management',
-                'pendingEntries' => $formattedPending,
-                'entries' => $formattedHistory,
+                'entries' => $formattedEntries,
                 'suppliers' => $suppliers,
                 'categories' => $categories,
                 'search' => $search,
@@ -152,23 +99,13 @@ class StockEntryController
                 'date_fin' => $dateFin,
                 'selected_supplier' => $supplier,
                 'selected_category' => $category,
-                'success_message' => $_SESSION['success'] ?? null,
-                'error_message' => $_SESSION['error'] ?? null
+                'current_page' => 'gestion-entree'
             ]);
 
-            // Nettoyer les messages de session après l'affichage
-            unset($_SESSION['success'], $_SESSION['error']);
-
         } catch (\Exception $e) {
-            // Log l'erreur pour le débogage
-            error_log("StockEntryController error: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
-
             echo $this->twig->render('gestion-entree.html.twig', [
-                'current_page' => 'entrance-management',
-                'pendingEntries' => [],
-                'entries' => [],
-                'error_message' => 'Une erreur est survenue lors du chargement des données: ' . $e->getMessage()
+                'error' => $e->getMessage(),
+                'current_page' => 'gestion-entree'
             ]);
         }
     }
@@ -176,6 +113,10 @@ class StockEntryController
     public function deleteEntry()
     {
         try {
+            // Vérifier les permissions
+            $userRole = $_SESSION['user_role'] ?? 'employe';
+            $this->permissionService->checkPermission($userRole, 'gestion_entrees_stock');
+
             $id = $_GET['id'] ?? null;
             
             if (!$id) {
