@@ -69,7 +69,7 @@ CREATE TABLE orders (
   date_livraison DATE NOT NULL,
   users_id INT NOT NULL,
   status ENUM('en_attente', 'validee', 'livree', 'annulee') DEFAULT 'en_attente',
-  stock_added BOOLEAN DEFAULT FALSE,
+  COLUMN stock_updated BOOLEAN DEFAULT 0
   FOREIGN KEY (categories_id) REFERENCES categories(id),
   FOREIGN KEY (supplier_id) REFERENCES supplier(id),
   FOREIGN KEY (users_id) REFERENCES users(id)

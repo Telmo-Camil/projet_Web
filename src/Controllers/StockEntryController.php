@@ -29,13 +29,16 @@ class StockEntryController
             $supplier = $_GET['supplier'] ?? '';
             $category = $_GET['category'] ?? '';
 
-            // Récupérer toutes les commandes livrées (date de livraison <= aujourd'hui)
+            // Récupérer toutes les commandes livrées avec toutes les informations nécessaires
             $query = "SELECT 
                     o.id,
                     o.date_livraison,
                     o.product_name,
                     o.quantite,
                     o.prix,
+                    o.supplier_id,
+                    o.categories_id,
+                    o.stock_updated,
                     s.nom as supplier_name,
                     c.nom as category_name
                 FROM orders o
@@ -71,6 +74,79 @@ class StockEntryController
             $stmt = $this->db->prepare($query);
             $stmt->execute($params);
             $entries = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            // Pour chaque commande livrée, mettre à jour le stock
+            foreach ($entries as $entry) {
+                if (!$entry['stock_updated']) {
+                    try {
+                        $this->db->beginTransaction();
+                        
+                        // Vérifier si le produit existe
+                        $checkProduct = "SELECT id, quantite FROM product 
+                                       WHERE nom = :nom 
+                                       AND categories_id = :categories_id 
+                                       AND supplier_id = :supplier_id";
+                        
+                        $stmtCheck = $this->db->prepare($checkProduct);
+                        $stmtCheck->execute([
+                            'nom' => $entry['product_name'],
+                            'categories_id' => $entry['categories_id'],
+                            'supplier_id' => $entry['supplier_id']
+                        ]);
+                        
+                        $existingProduct = $stmtCheck->fetch(\PDO::FETCH_ASSOC);
+                        
+                        if ($existingProduct) {
+                            // Mettre à jour le produit existant
+                            $updateProduct = "UPDATE product 
+                                            SET quantite = quantite + :quantite,
+                                                prix = :prix
+                                            WHERE id = :id";
+                            
+                            $stmtUpdate = $this->db->prepare($updateProduct);
+                            $stmtUpdate->execute([
+                                'quantite' => $entry['quantite'],
+                                'prix' => $entry['prix'],
+                                'id' => $existingProduct['id']
+                            ]);
+                        } else {
+                            // Créer un nouveau produit
+                            $insertProduct = "INSERT INTO product (
+                                nom, 
+                                prix, 
+                                quantite, 
+                                categories_id, 
+                                supplier_id
+                            ) VALUES (
+                                :nom,
+                                :prix,
+                                :quantite,
+                                :categories_id,
+                                :supplier_id
+                            )";
+                            
+                            $stmtInsert = $this->db->prepare($insertProduct);
+                            $stmtInsert->execute([
+                                'nom' => $entry['product_name'],
+                                'prix' => $entry['prix'],
+                                'quantite' => $entry['quantite'],
+                                'categories_id' => $entry['categories_id'],
+                                'supplier_id' => $entry['supplier_id']
+                            ]);
+                        }
+
+                        // Marquer la commande comme traitée
+                        $updateOrder = "UPDATE orders SET stock_updated = 1 WHERE id = :id";
+                        $stmtOrder = $this->db->prepare($updateOrder);
+                        $stmtOrder->execute(['id' => $entry['id']]);
+
+                        $this->db->commit();
+                    } catch (\Exception $e) {
+                        $this->db->rollBack();
+                        error_log("Erreur lors de la mise à jour du stock: " . $e->getMessage());
+                    }
+                }
+            }
 
             // Formater les données
             $formattedEntries = array_map(function($entry) {
@@ -204,6 +280,110 @@ class StockEntryController
         } catch (\Exception $e) {
             $this->db->rollBack();
             error_log("Error adding to stock: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    private function updateStockFromDelivery($order)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // Vérifier si le produit existe déjà
+            $query = "SELECT id, quantite FROM product 
+                     WHERE nom = :nom 
+                     AND categories_id = :categories_id 
+                     AND supplier_id = :supplier_id";
+            
+            $stmt = $this->db->prepare($query);
+            $stmt->execute([
+                'nom' => $order['product_name'],
+                'categories_id' => $order['categories_id'],
+                'supplier_id' => $order['supplier_id']
+            ]);
+            
+            $existingProduct = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if ($existingProduct) {
+                // Mettre à jour la quantité du produit existant
+                $updateQuery = "UPDATE product 
+                              SET quantite = quantite + :quantite,
+                                  prix = :prix
+                              WHERE id = :id";
+                
+                $stmt = $this->db->prepare($updateQuery);
+                $stmt->execute([
+                    'quantite' => $order['quantite'],
+                    'prix' => $order['prix'],
+                    'id' => $existingProduct['id']
+                ]);
+
+                $productId = $existingProduct['id'];
+                $newStock = $existingProduct['quantite'] + $order['quantite'];
+            } else {
+                // Créer un nouveau produit
+                $insertQuery = "INSERT INTO product (
+                    nom, 
+                    prix, 
+                    quantite, 
+                    categories_id, 
+                    supplier_id
+                ) VALUES (
+                    :nom, 
+                    :prix, 
+                    :quantite, 
+                    :categories_id, 
+                    :supplier_id
+                )";
+                
+                $stmt = $this->db->prepare($insertQuery);
+                $stmt->execute([
+                    'nom' => $order['product_name'],
+                    'prix' => $order['prix'],
+                    'quantite' => $order['quantite'],
+                    'categories_id' => $order['categories_id'],
+                    'supplier_id' => $order['supplier_id']
+                ]);
+
+                $productId = $this->db->lastInsertId();
+                $newStock = $order['quantite'];
+            }
+
+            // Ajouter l'entrée dans l'historique des mouvements
+            $stockMovementQuery = "INSERT INTO stock_movements (
+                product_id,
+                type,
+                quantity,
+                date,
+                reason,
+                stock_after
+            ) VALUES (
+                :product_id,
+                'entree',
+                :quantity,
+                NOW(),
+                :reason,
+                :stock_after
+            )";
+
+            $stmt = $this->db->prepare($stockMovementQuery);
+            $stmt->execute([
+                'product_id' => $productId,
+                'quantity' => $order['quantite'],
+                'reason' => 'Livraison commande #' . $order['id'],
+                'stock_after' => $newStock
+            ]);
+
+            // Marquer la commande comme traitée
+            $updateOrderQuery = "UPDATE orders SET stock_updated = 1 WHERE id = :id";
+            $stmt = $this->db->prepare($updateOrderQuery);
+            $stmt->execute(['id' => $order['id']]);
+
+            $this->db->commit();
+            return true;
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            error_log("Erreur mise à jour stock: " . $e->getMessage());
             throw $e;
         }
     }
