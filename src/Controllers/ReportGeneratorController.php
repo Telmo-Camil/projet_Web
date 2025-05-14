@@ -5,42 +5,25 @@ namespace App\Controllers;
 use PDO;
 use Twig\Environment;
 use TCPDF;
+use App\Models\ReportModel;
 
 class ReportGeneratorController
 {
-    private $db;
     private $twig;
+    private $reportModel;
 
     public function __construct(Environment $twig, PDO $db)
     {
-        $this->db = $db;
         $this->twig = $twig;
+        $this->reportModel = new ReportModel($db);
     }
 
     public function index()
     {
         try {
-            // Récupérer les catégories pour le formulaire
-            $queryCategories = "SELECT id, nom FROM categories ORDER BY nom";
-            $stmt = $this->db->query($queryCategories);
-            $categories = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            // Récupérer les rapports générés
-            $queryReports = "SELECT 
-                r.*,
-                CASE 
-                    WHEN r.type = 'stock_movements' THEN 'Mouvements de stock'
-                    WHEN r.type = 'purchase_forecast' THEN 'Prévisions d''achats'
-                    WHEN r.type = 'stock_alerts' THEN 'Alertes de stock'
-                END as type_label
-                FROM reports r
-                ORDER BY r.created_at DESC";
-            
-            $stmt = $this->db->query($queryReports);
-            $reports = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            // Récupérer les statistiques globales
-            $stats = $this->getGlobalStats();
+            $categories = $this->reportModel->getCategories();
+            $reports = $this->reportModel->getGeneratedReports();
+            $stats = $this->reportModel->getGlobalStats();
 
             echo $this->twig->render('rapport.html.twig', [
                 'categories' => $categories,
@@ -56,49 +39,6 @@ class ReportGeneratorController
         }
     }
 
-    private function getGlobalStats()
-    {
-        // Calculer les statistiques des 30 derniers jours
-        $query = "SELECT 
-            (SELECT COUNT(*) FROM stock_sorties 
-             WHERE date >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)) as recent_movements,
-            (SELECT COUNT(*) FROM product WHERE quantite < 10) as products_to_order,
-            CONCAT(
-                CASE 
-                    WHEN (
-                        SELECT SUM(CASE WHEN type = 'entree' THEN quantity ELSE -quantity END)
-                        FROM (
-                            SELECT 'entree' as type, quantite as quantity
-                            FROM orders 
-                            WHERE date_livraison >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
-                            UNION ALL
-                            SELECT 'sortie' as type, quantity
-                            FROM stock_sorties
-                            WHERE date >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
-                        ) as movements
-                    ) > 0 THEN '+'
-                    ELSE ''
-                END,
-                COALESCE(
-                    (
-                        SELECT SUM(CASE WHEN type = 'entree' THEN quantity ELSE -quantity END)
-                        FROM (
-                            SELECT 'entree' as type, quantite as quantity
-                            FROM orders 
-                            WHERE date_livraison >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
-                            UNION ALL
-                            SELECT 'sortie' as type, quantity
-                            FROM stock_sorties
-                            WHERE date >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
-                        ) as movements
-                    ), 0
-                )
-            ) as stock_trend";
-
-        $stmt = $this->db->query($query);
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
-    }
-
     public function generateReport()
     {
         try {
@@ -112,27 +52,11 @@ class ReportGeneratorController
                 throw new \Exception("Paramètres manquants");
             }
 
-            // Générer le rapport
-            $reportData = $this->getReportData($type, $dateStart, $dateEnd, $categories);
-            
-            // Créer le fichier
+            $reportData = $this->reportModel->getReportData($type, $dateStart, $dateEnd, $categories);
             $fileName = $this->createReportFile($reportData, $format);
             
-            // Sauvegarder dans la base de données
-            $query = "INSERT INTO reports (title, type, date_start, date_end, categories, format, file_path) 
-                     VALUES (:title, :type, :date_start, :date_end, :categories, :format, :file_path)";
+            $this->reportModel->saveReport($reportData, $type, $dateStart, $dateEnd, $categories, $format, $fileName);
             
-            $stmt = $this->db->prepare($query);
-            $stmt->execute([
-                'title' => $reportData['title'],
-                'type' => $type,
-                'date_start' => $dateStart,
-                'date_end' => $dateEnd,
-                'categories' => json_encode($categories),
-                'format' => $format,
-                'file_path' => $fileName
-            ]);
-
             $_SESSION['success'] = "Rapport généré avec succès";
             
         } catch (\Exception $e) {
@@ -146,11 +70,7 @@ class ReportGeneratorController
     public function downloadReport($id)
     {
         try {
-            $query = "SELECT * FROM reports WHERE id = :id";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute(['id' => $id]);
-            $report = $stmt->fetch(PDO::FETCH_ASSOC);
-
+            $report = $this->reportModel->getReportById($id);
             if (!$report) {
                 throw new \Exception("Rapport non trouvé");
             }
@@ -215,148 +135,6 @@ class ReportGeneratorController
             default:
                 return 'application/octet-stream';
         }
-    }
-
-    private function getReportData($type, $dateStart, $dateEnd, $categories)
-    {
-        $data = [];
-        $data['title'] = '';
-
-        switch ($type) {
-            case 'stock_movements':
-                $data = $this->getStockMovementsReport($dateStart, $dateEnd, $categories);
-                break;
-            case 'purchase_forecast':
-                $data = $this->getPurchaseForecastReport($dateStart, $dateEnd, $categories);
-                break;
-            case 'stock_alerts':
-                $data = $this->getStockAlertsReport($categories);
-                break;
-        }
-
-        return $data;
-    }
-
-    private function getStockMovementsReport($dateStart, $dateEnd, $categories)
-    {
-        $categoryCondition = '';
-        $params = [
-            'start_date' => $dateStart,
-            'end_date' => $dateEnd
-        ];
-
-        if ($categories !== ['all']) {
-            $categoryCondition = "AND p.categories_id IN (" . implode(',', array_map('intval', $categories)) . ")";
-        }
-
-        $query = "
-            SELECT 
-                DATE(m.date) as date,
-                m.type,
-                p.nom as product_name,
-                c.nom as category_name,
-                SUM(m.quantity) as quantity
-            FROM (
-                SELECT date_livraison as date, 'Entrée' as type, quantite as quantity, product_name
-                FROM orders 
-                WHERE date_livraison BETWEEN :start_date AND :end_date
-                UNION ALL
-                SELECT date, 'Sortie' as type, quantity, p.nom
-                FROM stock_sorties s
-                JOIN product p ON s.product_id = p.id
-                WHERE date BETWEEN :start_date AND :end_date
-            ) m
-            JOIN product p ON m.product_name = p.nom
-            JOIN categories c ON p.categories_id = c.id
-            WHERE 1=1 {$categoryCondition}
-            GROUP BY DATE(m.date), m.type, p.nom, c.nom
-            ORDER BY date ASC";
-
-        $stmt = $this->db->prepare($query);
-        $stmt->execute($params);
-        $movements = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-        return [
-            'title' => 'Mouvements de Stock',
-            'data' => $movements,
-            'fileName' => 'mouvements_stock_' . date('Y-m-d') . '_' . uniqid()
-        ];
-    }
-
-    private function getPurchaseForecastReport($dateStart, $dateEnd, $categories)
-    {
-        $categoryCondition = '';
-        if ($categories !== ['all']) {
-            $categoryCondition = "WHERE p.categories_id IN (" . implode(',', array_map('intval', $categories)) . ")";
-        }
-
-        $query = "
-            SELECT 
-                p.nom as product_name,
-                c.nom as category_name,
-                p.quantite as current_stock,
-                COALESCE(
-                    (SELECT AVG(s.quantity) 
-                    FROM stock_sorties s 
-                    WHERE s.product_id = p.id 
-                    AND s.date >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
-                    ), 0
-                ) as avg_monthly_usage,
-                CASE 
-                    WHEN p.quantite = 0 THEN 'Urgent'
-                    WHEN p.quantite < 5 THEN 'Critique'
-                    WHEN p.quantite < 10 THEN 'À commander'
-                    ELSE 'Normal'
-                END as status
-            FROM product p
-            JOIN categories c ON p.categories_id = c.id
-            {$categoryCondition}
-            ORDER BY p.quantite ASC";
-
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $forecast = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-        return [
-            'title' => 'Prévisions d\'Achats',
-            'data' => $forecast,
-            'fileName' => 'previsions_achats_' . date('Y-m-d') . '_' . uniqid()
-        ];
-    }
-
-    private function getStockAlertsReport($categories)
-    {
-        $categoryCondition = '';
-        if ($categories !== ['all']) {
-            $categoryCondition = "AND p.categories_id IN (" . implode(',', array_map('intval', $categories)) . ")";
-        }
-
-        $query = "
-            SELECT 
-                p.nom as product_name,
-                c.nom as category_name,
-                p.quantite as current_stock,
-                10 as alert_threshold,
-                CASE 
-                    WHEN p.quantite = 0 THEN 'Rupture'
-                    WHEN p.quantite < 5 THEN 'Critique'
-                    WHEN p.quantite < 10 THEN 'Alerte'
-            END as alert_level
-            FROM product p
-            JOIN categories c ON p.categories_id = c.id
-            WHERE p.quantite < 10 
-            {$categoryCondition}
-            ORDER BY p.quantite ASC";
-
-        $stmt = $this->db->prepare($query);
-        $stmt->execute();
-        $alerts = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-        return [
-            'title' => 'Alertes de Stock',
-            'data' => $alerts,
-            'fileName' => 'alertes_stock_' . date('Y-m-d') . '_' . uniqid()
-        ];
     }
 
     private function createReportFile($reportData, $format)

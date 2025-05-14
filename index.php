@@ -100,7 +100,7 @@ switch ($uri) {
         break;
 
     case 'entrance-management':
-        $stockEntryController->index();  // Utiliser stockEntryController au lieu de controller
+        $stockEntryController->index();  
         break;
 
     case 'supplier-management':
