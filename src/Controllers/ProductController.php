@@ -23,13 +23,11 @@ class ProductController
     public function index()
     {
         try {
-            // Récupérer le filtre de catégorie
+            $search = $_GET['search'] ?? '';
             $categoryId = $_GET['category'] ?? 'all';
             
             // Récupérer les produits filtrés
-            $products = ($categoryId === 'all') 
-                ? $this->productModel->getAllProducts()
-                : $this->productModel->getProductsByCategory($categoryId);
+            $products = $this->productModel->getFilteredProducts($search, $categoryId);
             
             // Récupérer toutes les catégories pour le filtre
             $categories = $this->categoryModel->getAllCategories();
@@ -38,7 +36,8 @@ class ProductController
                 'products' => $products,
                 'categories' => $categories,
                 'selectedCategory' => $categoryId,
-                'debug' => true // Pour le débogage
+                'search' => $search,
+                'current_page' => 'gestion-produit'
             ]);
         } catch (\Exception $e) {
             error_log("Erreur: " . $e->getMessage());

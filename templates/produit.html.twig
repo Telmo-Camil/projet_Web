@@ -28,14 +28,18 @@
         <section class="search-section">
             <div class="search-bar">
                 <label for="search">Rechercher un produit :</label>
-                <input type="text" id="search" name="search" placeholder="Recherche par nom ou catégorie...">
+                <input type="text" 
+                       id="search" 
+                       name="search" 
+                       placeholder="Recherche par nom ou catégorie..."
+                       value="{{ search|default('') }}">
                 <button id="searchBtn" class="searchBtn">
                     🔍 Rechercher
                 </button>
             </div>
             
             <div class="filterBar">
-                <select id="categoryFilter" name="category" class="categoryFilter" onchange="filterByCategory(this.value)">
+                <select id="categoryFilter" name="category" class="categoryFilter">
                     <option value="all">Toutes les catégories</option>
                     {% if categories is defined %}
                         {% for category in categories %}
@@ -49,23 +53,27 @@
             </div>
         </section>
 
-        <div class="nav-grid">
+        <div class="product-grid">
             {% if products is defined and products is not empty %}
                 {% for product in products %}
                     <div class="product-card">
-                        <h4>{{ product.product_name }}</h4>
+                        <h4>{{ product.nom }}</h4>
                         <p>Catégorie : {{ product.category_name }}</p>
                         <p>Prix : {{ product.prix }} €</p>
-                        <p class="stock">En stock : {{ product.quantite }}</p>
+                        <p class="stock {% if product.quantite <= 0 %}stock-empty{% elseif product.quantite < 10 %}stock-low{% endif %}">
+                            En stock : {{ product.quantite }}
+                        </p>
                         <p>Fournisseur : {{ product.supplier_name }}</p>
                     </div>
                 {% endfor %}
             {% else %}
-                <p class="no-results">Aucun produit disponible pour le moment.</p>
+                <p class="no-results">Aucun produit trouvé.</p>
             {% endif %}
         </div>
-
     </div>
 </main>
+
+{# Ajout du script JavaScript #}
+<script src="assets/js/product-search.js"></script>
 {% endblock %}
 

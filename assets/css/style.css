@@ -1366,3 +1366,38 @@ table tr:hover {
     }
 }
 
+.home-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: background-color 0.3s;
+    margin-right: 1rem;
+    border: none;
+}
+
+.home-button:hover {
+    background-color: #0056b3;
+    color: white;
+}
+
+.logo-container {
+    margin-right: auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .home-button {
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        margin: 5px 0;
+    }
+}
+

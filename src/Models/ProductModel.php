@@ -117,4 +117,39 @@ class ProductModel
             throw $e;
         }
     }
+
+    public function getFilteredProducts($search = '', $categoryId = 'all')
+    {
+        $params = [];
+        $conditions = [];
+        
+        $query = "SELECT 
+                    p.*,
+                    c.nom as category_name,
+                    s.nom as supplier_name
+                FROM product p
+                LEFT JOIN categories c ON p.categories_id = c.id
+                LEFT JOIN supplier s ON p.supplier_id = s.id
+                WHERE 1=1";
+
+        if (!empty($search)) {
+            $conditions[] = "(p.nom LIKE :search OR c.nom LIKE :search OR s.nom LIKE :search)";
+            $params['search'] = "%$search%";
+        }
+
+        if ($categoryId !== 'all') {
+            $conditions[] = "p.categories_id = :category_id";
+            $params['category_id'] = $categoryId;
+        }
+
+        if (!empty($conditions)) {
+            $query .= " AND " . implode(" AND ", $conditions);
+        }
+
+        $query .= " ORDER BY p.nom";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
